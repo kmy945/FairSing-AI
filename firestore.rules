@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 每位登入教師只能讀寫自己的 FairSing AI 資料。
+    match /teachers/{teacherUid}/app/{documentId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == teacherUid;
+    }
+
+    // 其他資料預設全部拒絕。
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
