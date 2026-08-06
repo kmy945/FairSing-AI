@@ -174,7 +174,7 @@
 </style><link rel="manifest" href="manifest.webmanifest">
 </head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
-<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
+<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.6 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
 <button class="nav" data-p="schedule">📅 課表／日曆</button>
 <button class="nav" data-p="classes">👨‍🎓 班級學生</button>
@@ -251,7 +251,7 @@
 <div class="audio-engine-card">
  <div class="row between">
   <div><h3 style="margin:0">🎤 收音與 AI 即時分析</h3><div id="micPermissionState" class="muted">尚未啟用麥克風</div>
-<div id="audioCalibrationSummary" class="audio-cal-summary">尚未完成本裝置校正</div></div>
+<div id="audioCalibrationSummary" class="audio-cal-summary">尚未完成本裝置校正</div><div class="muted" style="margin-top:6px">伴奏歌唱會啟用人聲隔離。使用耳機播放伴奏，或由另一台裝置播放，評分會最準確；未設定參考旋律時，「AI 音準」為音高穩定度估計。</div></div>
   <div class="row">
    <button class="btn ghost" onclick="openAudioCalibration()">設備檢查</button><button class="btn secondary" onclick="startAudioAssessment()">開始收音</button>
    <button class="btn danger" onclick="stopAudioAssessment()">停止收音</button>
@@ -1839,13 +1839,14 @@ function renderAudioCalibrationSummary(){
 
 let audioAssessCtx=null,audioAssessStream=null,audioAnalyser=null,audioSourceNode=null,audioFrameId=null;
 let audioAssessStartedAt=0,audioPitchFrames=[],audioOnsets=[],audioLastRms=0,audioLastOnsetAt=0;
+let audioVoicedFrames=0,audioTotalFrames=0,audioVoiceActive=false,audioVoiceStartedAt=0,audioVoicedMs=0;
 
 const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 function freqToMidi(freq){return 69+12*Math.log2(freq/440)}
 function midiToName(m){const n=Math.round(m);return NOTE_NAMES[(n%12+12)%12]+(Math.floor(n/12)-1)}
 function centsFromNearest(freq){const m=freqToMidi(freq),nearest=Math.round(m);return (m-nearest)*100}
 function autoCorrelate(buf,sampleRate){
- let SIZE=buf.length,rms=0;for(let i=0;i<SIZE;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/SIZE);if(rms<0.015)return {freq:-1,rms};
+ let SIZE=buf.length,rms=0;for(let i=0;i<SIZE;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/SIZE);if(rms<0.015)return {freq:-1,rms,clarity:0};
  let r1=0,r2=SIZE-1,thres=0.2;
  for(let i=0;i<SIZE/2;i++)if(Math.abs(buf[i])<thres){r1=i;break}
  for(let i=1;i<SIZE/2;i++)if(Math.abs(buf[SIZE-i])<thres){r2=SIZE-i;break}
@@ -1853,10 +1854,11 @@ function autoCorrelate(buf,sampleRate){
  for(let i=0;i<SIZE;i++)for(let j=0;j<SIZE-i;j++)c[i]+=b[j]*b[j+i];
  let d=0;while(d<SIZE-1&&c[d]>c[d+1])d++;
  let maxval=-1,maxpos=-1;for(let i=d;i<SIZE;i++)if(c[i]>maxval){maxval=c[i];maxpos=i}
- let T0=maxpos;if(T0<=0)return {freq:-1,rms};
+ let T0=maxpos;if(T0<=0)return {freq:-1,rms,clarity:0};
  const x1=c[T0-1]||c[T0],x2=c[T0],x3=c[T0+1]||c[T0];
  const a=(x1+x3-2*x2)/2,bp=(x3-x1)/2;if(a)T0=T0-bp/(2*a);
- return {freq:sampleRate/T0,rms}
+ const clarity=Math.max(0,Math.min(1,maxval/Math.max(1e-9,c[0])));
+ return {freq:sampleRate/T0,rms,clarity}
 }
 function getReferenceMidi(){
  let seq=[];
@@ -1882,52 +1884,80 @@ function drawPitchTrace(){
  recent.forEach((f,i)=>{if(!Number.isFinite(f.midi))return;const x=i/Math.max(1,recent.length-1)*w,y=h-((f.midi-min)/span*h);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke()
 }
 function calculateAudioScores(){
- const valid=audioPitchFrames.filter(f=>Number.isFinite(f.midi));
+ const valid=audioPitchFrames.filter(f=>Number.isFinite(f.midi)&&f.voice===true);
  const ref=getReferenceMidi(),tol=+pitchTolerance.value||50;
+ const templateType=aeTemplate()?.type||'';
+ const backingVocal=templateType==='vocal';
  let pitchScore=0;
  if(valid.length){
   if(ref.length){
    let good=0;valid.forEach((f,i)=>{const target=ref[Math.min(ref.length-1,Math.floor(i/valid.length*ref.length))];const cents=Math.abs((f.midi-target)*100);if(cents<=tol)good++});
    pitchScore=good/valid.length*100
   }else{
-   const dev=valid.reduce((a,f)=>a+Math.abs(f.cents),0)/valid.length;pitchScore=Math.max(0,100-dev/1.2)
+   // 無參考旋律時只能估算「音高穩定度」，不能視為真正唱準率。
+   // 伴奏歌唱採更嚴格的人聲門檻，降低伴奏旋律被計分。
+   const dev=valid.reduce((a,f)=>a+Math.abs(f.cents),0)/valid.length;
+   const base=Math.max(0,100-dev/(backingVocal?0.85:1.2));
+   const coverage=Math.min(1,valid.length/Math.max(1,audioTotalFrames*.35));
+   pitchScore=base*coverage
   }
  }
- const elapsed=Math.max(1,(performance.now()-audioAssessStartedAt)/1000),bpm=+audioAssessBpm.value||80,expected=Math.max(1,elapsed*bpm/60);
- const onsetRatio=Math.min(audioOnsets.length,expected)/Math.max(audioOnsets.length,expected);
- const rhythmScore=Math.max(0,Math.min(100,onsetRatio*100));
- const minSec=+minAssessSeconds.value||10,complete=Math.max(0,Math.min(100,elapsed/minSec*100));
+ const elapsed=Math.max(.1,(performance.now()-audioAssessStartedAt)/1000),bpm=+audioAssessBpm.value||80,expected=Math.max(1,elapsed*bpm/60);
+ // 只使用「人聲有效區段」偵測到的起音，不再把所有伴奏拍點直接算入。
+ const voiceExpected=Math.max(1,(audioVoicedMs/1000)*bpm/60);
+ const rhythmBase=Math.min(audioOnsets.length,voiceExpected)/Math.max(audioOnsets.length,voiceExpected);
+ const rhythmCoverage=Math.min(1,audioVoicedMs/Math.max(1000,elapsed*1000*.25));
+ const rhythmScore=Math.max(0,Math.min(100,rhythmBase*100*rhythmCoverage));
+ const minSec=+minAssessSeconds.value||10;
+ // 完整度改為「實際偵測到人聲／演奏的有效時間」，不再只靠計時自動拿滿分。
+ const voicedSec=Math.min(elapsed,audioVoicedMs/1000);
+ const complete=Math.max(0,Math.min(100,voicedSec/minSec*100));
  const total=pitchScore*.6+rhythmScore*.3+complete*.1;
  aiPitchScore.textContent=pitchScore.toFixed(0);aiRhythmScore.textContent=rhythmScore.toFixed(0);aiCompletenessScore.textContent=complete.toFixed(0);aiAudioTotal.textContent=total.toFixed(0);
  ai.value=total.toFixed(0);calc();
- return {pitchScore,rhythmScore,complete,total,elapsed}
+ return {pitchScore,rhythmScore,complete,total,elapsed,voicedSec}
 }
 function audioAssessmentLoop(){
  if(!audioAnalyser)return;
  const buf=new Float32Array(audioAnalyser.fftSize);audioAnalyser.getFloatTimeDomainData(buf);
- const {freq,rms}=autoCorrelate(buf,audioAssessCtx.sampleRate);
+ const {freq,rms,clarity=0}=autoCorrelate(buf,audioAssessCtx.sampleRate);
  liveVolume.textContent=rms.toFixed(3);
  const now=performance.now();
- const calibratedNoise=S.audioAssessment?.calibration?.noiseRms||0;if(rms>Math.max(.035,calibratedNoise*2.2,audioLastRms*1.55)&&now-audioLastOnsetAt>140){audioOnsets.push(now);audioLastOnsetAt=now;liveOnsets.textContent=audioOnsets.length}
+ const calibratedNoise=S.audioAssessment?.calibration?.noiseRms||0;
+ const templateType=aeTemplate()?.type||'';
+ const backingVocal=templateType==='vocal';
+ // 伴奏歌唱用較高門檻與諧波清晰度，盡量只保留近距離主唱聲。
+ const voiceThreshold=Math.max(backingVocal?.05:.03,calibratedNoise*(backingVocal?3.6:2.4));
+ const voiceNow=rms>voiceThreshold&&clarity>(backingVocal?.58:.42)&&freq>75&&freq<(backingVocal?1200:1800);
+ audioTotalFrames++;
+ if(voiceNow){
+  audioVoicedFrames++;
+  if(!audioVoiceActive){audioVoiceActive=true;audioVoiceStartedAt=now}
+ }else if(audioVoiceActive){
+  audioVoicedMs+=Math.max(0,now-audioVoiceStartedAt);audioVoiceActive=false
+ }
+ if(voiceNow&&rms>Math.max(voiceThreshold*1.12,audioLastRms*1.42)&&now-audioLastOnsetAt>170){audioOnsets.push(now);audioLastOnsetAt=now;liveOnsets.textContent=audioOnsets.length}
  audioLastRms=rms*.7+audioLastRms*.3;
- if(freq>60&&freq<1800){
+ if(voiceNow){
   const midi=freqToMidi(freq),cents=centsFromNearest(freq);
-  audioPitchFrames.push({t:now-audioAssessStartedAt,freq,midi,cents});
+  audioPitchFrames.push({t:now-audioAssessStartedAt,freq,midi,cents,voice:true,clarity});
   livePitchName.textContent=midiToName(midi);livePitchHz.textContent=freq.toFixed(1)+' Hz';liveCents.textContent=(cents>=0?'+':'')+cents.toFixed(0)
- }else audioPitchFrames.push({t:now-audioAssessStartedAt,freq:null,midi:null,cents:null});
+ }else audioPitchFrames.push({t:now-audioAssessStartedAt,freq:null,midi:null,cents:null,voice:false,clarity});
  drawPitchTrace();calculateAudioScores();audioFrameId=requestAnimationFrame(audioAssessmentLoop)
 }
 window.startAudioAssessment=async()=>{
  if(audioAssessStream)return;
  try{
-  audioAssessStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  const backingVocal=aeTemplate()?.type==='vocal';
+  audioAssessStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:backingVocal,noiseSuppression:backingVocal,autoGainControl:false,channelCount:1}});
   audioAssessCtx=new (window.AudioContext||window.webkitAudioContext)();
   audioSourceNode=audioAssessCtx.createMediaStreamSource(audioAssessStream);audioAnalyser=audioAssessCtx.createAnalyser();audioAnalyser.fftSize=2048;audioAnalyser.smoothingTimeConstant=.15;audioSourceNode.connect(audioAnalyser);
-  audioAssessStartedAt=performance.now();audioPitchFrames=[];audioOnsets=[];audioLastRms=0;audioLastOnsetAt=0;
+  audioAssessStartedAt=performance.now();audioPitchFrames=[];audioOnsets=[];audioLastRms=0;audioLastOnsetAt=0;audioVoicedFrames=0;audioTotalFrames=0;audioVoiceActive=false;audioVoiceStartedAt=0;audioVoicedMs=0;
   micPermissionState.textContent='收音中｜請學生開始演唱或演奏';audioAssessmentLoop()
  }catch(e){micPermissionState.textContent='無法取得麥克風權限';alert('麥克風啟用失敗：'+e.message)}
 };
 window.stopAudioAssessment=()=>{
+ if(audioVoiceActive){audioVoicedMs+=Math.max(0,performance.now()-audioVoiceStartedAt);audioVoiceActive=false}
  if(audioFrameId)cancelAnimationFrame(audioFrameId);audioFrameId=null;
  audioAssessStream?.getTracks().forEach(t=>t.stop());audioAssessStream=null;
  try{audioAssessCtx?.close()}catch(e){} audioAssessCtx=null;audioAnalyser=null;
