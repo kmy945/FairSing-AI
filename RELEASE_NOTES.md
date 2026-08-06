@@ -1,30 +1,12 @@
-# FairSing AI v3.0.0 正式版
+# FairSing AI v3.2.0 手機相容修正版
 
-發布日期：2026-08-02
+發布日期：2026-08-06
 
-## 正式版核心模組
-- Dashboard
-- 課表／日曆
-- 班級學生
-- 評量模板
-- FairDraw
-- Assessment
-- 音樂知識與能力中心
-- Curriculum（20～22 週與進度匯入）
-- Classroom Mode
-- Reports
-- 設定與 Excel／JSON 備份
+## 本次修正
 
-## 正式版開始流程
-1. 首次使用設定
-2. 建立或匯入班級學生
-3. 建立評量模板
-4. 建立或匯入 Curriculum
-5. Dashboard 開始今天課程
-6. Classroom Mode 上課
-7. Assessment 評量
-8. Reports 查看紀錄
-9. Excel／JSON 備份
-
-## 正式使用提醒
-即時 AI 音高與節奏分析仍需使用實際手機、平板與教室環境校正。第一次上課請先使用測試學生驗證收音、瀏覽器權限與分數保存。
+- Firebase Google 登入改用 `fairsing-ai.web.app` 同網域驗證，降低 Samsung Internet 對第三方 Cookie／儲存限制造成的登入無反應。
+- Android、Samsung Internet、iPhone、iPad 優先使用 Redirect 登入。
+- 登入失敗會顯示可理解的錯誤，不再只有按鈕無反應。
+- 麥克風改用相容性較高的基本權限請求，再套用音訊限制。
+- 權限遭拒、裝置不存在、麥克風被占用時，顯示手機可直接照做的處理方式。
+- 版本更新為 v3.2.0，原有班級、評量、抽籤、課程與報表功能保留。

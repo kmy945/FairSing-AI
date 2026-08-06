@@ -1,4 +1,4 @@
-# FairSing AI v3.1 Firebase 正式發布版
+# FairSing AI v3.2 手機相容修正版
 
 此版本以 Firebase 專案 `fairsing-ai` 為正式發布目標。
 
