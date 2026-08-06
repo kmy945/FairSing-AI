@@ -1702,6 +1702,20 @@ window.startClassroomSession=()=>{ensureClassroomMode();S.classroomMode.running=
 };
 window.startQuickTimer=min=>{if(quickInterval)clearInterval(quickInterval);quickSeconds=min*60;quickTimerLabel.textContent=`${min}:00`;quickInterval=setInterval(()=>{quickSeconds--;quickTimerLabel.textContent=`${String(Math.floor(Math.max(0,quickSeconds)/60)).padStart(2,'0')}:${String(Math.max(0,quickSeconds)%60).padStart(2,'0')}`;if(quickSeconds<=0){clearInterval(quickInterval);quickInterval=null;quickTimerLabel.textContent='時間到'}},1000)};window.adjustQuickTimer=sec=>{quickSeconds=Math.max(0,quickSeconds+sec);quickTimerLabel.textContent=`${String(Math.floor(quickSeconds/60)).padStart(2,'0')}:${String(quickSeconds%60).padStart(2,'0')}`};window.stopQuickTimer=()=>{if(quickInterval)clearInterval(quickInterval);quickInterval=null;quickSeconds=0;quickTimerLabel.textContent='未啟動'};window.customQuickTimer=()=>{const m=+prompt('輸入分鐘數',8);if(m>0)startQuickTimer(m)};
 function checkClassroomReminders(remaining){const cm=S.classroomMode,mins=[10,5,3,1];for(const m of mins){const enabled=document.getElementById('rem'+m)?.checked;if(enabled&&remaining<=m*60&&remaining>m*60-2&&!cm.reminded[m]){cm.reminded[m]=true;cmReminderMessage.textContent=`⏰ 還有 ${m} 分鐘下課，建議整理進度或進入總結。`}}}
+// Stable weighted-score calculator used by the assessment form and AI audio analysis.
+window.calc=()=>{
+ const aiEl=document.getElementById('ai'),teacherEl=document.getElementById('teacher'),finalEl=document.getElementById('final');
+ if(!aiEl||!teacherEl||!finalEl)return 0;
+ const aiScore=Math.max(0,Math.min(100,Number(aiEl.value)||0));
+ const teacherScore=Math.max(0,Math.min(100,Number(teacherEl.value)||0));
+ const aiWeight=Math.max(0,Number(S.settings?.sw) || 80);
+ const teacherWeight=Math.max(0,Number(S.settings?.tw) || 20);
+ const weightTotal=aiWeight+teacherWeight || 100;
+ const score=(aiScore*aiWeight+teacherScore*teacherWeight)/weightTotal;
+ finalEl.textContent=score.toFixed(1);
+ return score;
+};
+
 window.saveClassroomNotes=()=>{ensureClassroomMode();S.classroomMode.notes=cmTeacherNotes.value;save()};window.calcCmScore=()=>{const sw=+S.settings.sw||80,tw=+S.settings.tw||20;cmFinalScore.textContent=(((+cmAiScore.value||0)*sw+(+cmTeacherScore.value||0)*tw)/(sw+tw||100)).toFixed(1)};window.completeFromClassroom=()=>{ai.value=cmAiScore.value;teacher.value=cmTeacherScore.value;comment.value=cmAssessNote.value;completeAssessmentRecord();renderClassroomMode()};window.openTeacherBoard=()=>teacherBoardModal.classList.add('open');window.toggleBlackScreen=()=>blackScreenOverlay.classList.toggle('hidden');setInterval(()=>{if(window.cmClock)cmClock.textContent=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})},1000);
 
 
@@ -2241,7 +2255,7 @@ window.showVersionInfo=()=>{
   <p>建議正式上課前先以測試班級完整走過一次流程。</p></div>`)
 };
 
-window.saveSettings=()=>{S.settings={sw:+sw.value||80,tw:+tw.value||20};save()};window.exportJson=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download=`FairSing_AI_完整備份_${excelBackupStamp()}.json`;a.click()};
+window.saveSettings=()=>{S.settings={sw:+sw.value||80,tw:+tw.value||20};calc();save()};window.exportJson=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download=`FairSing_AI_完整備份_${excelBackupStamp()}.json`;a.click()};
 function excelReady(){let ok=typeof XLSX!=='undefined';if(window.excelStatus){excelStatus.textContent=ok?'✓ Excel 匯入／匯出可用':'⚠ Excel 元件尚未載入';excelStatus.className=ok?'excel-ok':'excel-bad'}return ok}
 window.renderExportClass=()=>{if(!window.exportScope||!window.exportClass)return;exportClass.disabled=exportScope.value!=='class'};
 function safeFileName(s){return String(s||'全部班級').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_')}
