@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI v3.2 修正版｜音樂教師智慧教學平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI v3.0 正式版｜音樂教師智慧教學平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
 :root{--b:#173c67;--a:#65d1c9;--p:#ff88a4;--bg:#f3f8fc;--line:#dce7ef}*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC",sans-serif;background:var(--bg);color:#24364b}button,input,select,textarea{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#eefaff,#fff4f7)}.box,.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 32px #173c6712}.box{width:min(520px,100%);padding:30px;text-align:center}.logo{width:130px;height:130px;border-radius:50%;margin:auto;display:grid;place-items:center;font-size:68px;background:radial-gradient(circle at 35% 25%,#fff,#d7fbff 28%,#68d3cc 65%,#347fa8)}.btn{border:0;border-radius:13px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#4d8fd8,#7882e6);color:#fff}.ghost{background:#fff;border:1px solid var(--line)}.danger{background:#e65d70;color:#fff}.top{background:linear-gradient(120deg,var(--b),#2e719f);color:#fff;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:22px;font-weight:950}.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px)}nav{background:#fff;border-right:1px solid var(--line);padding:14px}.nav{width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:13px;font-weight:750}.nav.active,.nav:hover{background:#e9f7f7}main{padding:18px}.page{display:none}.page.active{display:block}.hero{background:linear-gradient(135deg,#173c67,#2e72a2 60%,#49a9b9);color:#fff;border-radius:28px;padding:26px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{padding:16px}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}label{display:block;font-size:13px;color:#6f8095;margin:9px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px}textarea{min-height:80px}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.muted{color:#718096}.kpi{font-size:36px;font-weight:950}.seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}.seat{padding:10px;border:1px solid var(--line);border-radius:13px;background:#fff}.seat.active{background:var(--a)}.seat.done{outline:3px solid #37b978}.modal{position:fixed;inset:0;background:#10233eaa;display:none;place-items:center;padding:15px}.modal.open{display:grid}.dialog{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:18px}@media(max-width:850px){.shell{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{min-width:max-content}.s4,.s6,.s8{grid-column:span 12}}
 
 .export-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fbfd}.export-panel label{margin-top:0}.export-note{font-size:13px;color:#66798f}.export-checks{display:flex;gap:14px;flex-wrap:wrap;margin:9px 0}.export-checks label{display:flex;gap:6px;align-items:center;margin:0;color:#33465b}.export-checks input{width:auto}.excel-ok{color:#2b9d68;font-weight:800}.excel-bad{color:#d95769;font-weight:800}@media(max-width:720px){.export-panel{grid-template-columns:1fr}}
@@ -173,8 +173,8 @@
 
 </style><link rel="manifest" href="manifest.webmanifest">
 </head><body>
-<div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.2</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button id="googleLoginBtn" class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button><div id="loginStatus" class="notice" style="display:none;margin-top:12px;text-align:left"></div></div></div>
-<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">修正版 v3.2</span><div class="brand">🎼 FairSing AI v3.2 修正版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
+<div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.3</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
+<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.3</span><div class="brand">🎼 FairSing AI v3.3 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
 <button class="nav" data-p="schedule">📅 課表／日曆</button>
 <button class="nav" data-p="classes">👨‍🎓 班級學生</button>
@@ -824,60 +824,32 @@
 </main></div></div>
 <div id="modal" class="modal"><div class="dialog"><div class="row between"><h3 id="mt"></h3><button class="btn ghost" onclick="closeModal()">關閉</button></div><div id="mb"></div></div></div>
 <script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
-const cfg={apiKey:'AIzaSyAZy_Xf-WBo3JPYMJRbBlyWePw5lhduA2w',authDomain:'fairsing-ai.web.app',projectId:'fairsing-ai',storageBucket:'fairsing-ai.firebasestorage.app',messagingSenderId:'1018348024170',appId:'1:1018348024170:web:cbce3697ce8438d7d13513'};const fapp=initializeApp(cfg),auth=getAuth(fapp),db=getFirestore(fapp),provider=new GoogleAuthProvider();
+import{initializeApp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+const cfg={apiKey:'AIzaSyAZy_Xf-WBo3JPYMJRbBlyWePw5lhduA2w',authDomain:'fairsing-ai.firebaseapp.com',projectId:'fairsing-ai',storageBucket:'fairsing-ai.firebasestorage.app',messagingSenderId:'1018348024170',appId:'1:1018348024170:web:cbce3697ce8438d7d13513'};const fapp=initializeApp(cfg),auth=getAuth(fapp),db=getFirestore(fapp),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
 const D={classes:[],templates:[{id:'v',name:'伴奏歌唱',type:'vocal',ai:['音準','節奏','穩定度'],teacher:['音色','情感','台風']},{id:'a',name:'清唱',type:'acapella',ai:['音準','節奏','穩定度','音域'],teacher:['咬字','情感','自信']},{id:'f',name:'自由演唱',type:'free',ai:['音準','穩定度','音域'],teacher:['音樂性','表現力','創意']},{id:'r',name:'直笛獨奏',type:'recorder',ai:['音準','節奏','音符正確率','音長'],teacher:['音色','運舌','換氣']},{id:'p',name:'節奏打擊',type:'percussion',ai:['拍點準確度','節奏正確率','速度穩定度','漏拍與多拍'],teacher:['姿勢','協調性','力度控制','完整度']},{id:'ci',name:'自訂樂器',type:'customInstrument',instrument:'其他',useMetronome:true,needBacking:false,useScoreReference:false,ai:['音準','節奏','穩定度'],teacher:['音色','技巧','完整度']}],orders:{},records:[],session:null,draft:null,settings:{sw:80,tw:20},metronome:{bpm:80,beats:4,countIn:1,continue:true},
 curriculumMeta:{courseName:'音樂',publisher:'康軒',semester:'115學年度上學期'},
-curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.2.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-06'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
+curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.3.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
 
 function ensurePhase2(){
  S.questionBank=S.questionBank||[];S.scoreImports=S.scoreImports||[];S.materials=S.materials||[];S.schedule=S.schedule||[];S.calendarEvents=S.calendarEvents||[];S.phase2=S.phase2||{currentRhythm:null,currentSight:null};
 }
 
 const norm=x=>({...structuredClone(D),...x,settings:{...D.settings,...(x?.settings||{})}}),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-auth.languageCode='zh-TW';provider.setCustomParameters({prompt:'select_account'});
-function setLoginStatus(message,type='info'){
- const el=document.getElementById('loginStatus');if(!el)return;
- el.style.display='block';el.innerHTML=message;
- el.style.background=type==='error'?'#fff0f2':type==='ok'?'#e8f8ef':'#eef6ff';
- el.style.color=type==='error'?'#9b1c31':type==='ok'?'#17643b':'#31516a'
-}
-function authErrorText(e){
- const code=e?.code||'',msg=e?.message||'';
- if(code==='auth/popup-blocked')return '瀏覽器阻擋登入視窗，正在改用頁面跳轉登入。';
- if(code==='auth/popup-closed-by-user')return '登入視窗已關閉，請再按一次 Google 登入。';
- if(code==='auth/unauthorized-domain')return 'Firebase 尚未授權這個網站網域，請在 Firebase Authentication 加入 fairsing-ai.web.app。';
- if(code==='auth/network-request-failed')return '網路連線失敗，請確認網路後再試。';
- if(code==='auth/web-storage-unsupported')return '瀏覽器封鎖必要的網站儲存空間，請關閉無痕模式或改用一般分頁。';
- return `Google 登入失敗：${esc(code||msg||'未知錯誤')}`
-}
 window.googleLogin=async()=>{
- const btn=document.getElementById('googleLoginBtn');if(btn?.disabled)return;
- if(btn){btn.disabled=true;btn.textContent='正在開啟 Google 登入…'}
- setLoginStatus('正在連接 Google，請稍候。');
  try{
-  // 行動瀏覽器直接使用同網域 Redirect，避免 Samsung Internet 與第三方 Cookie 限制造成無反應。
-  if(/Android|iPhone|iPad|SamsungBrowser/i.test(navigator.userAgent)){
-   sessionStorage.setItem('fs_auth_pending','1');
-   await signInWithRedirect(auth,provider);return
-  }
-  await signInWithPopup(auth,provider)
+  await signInWithPopup(auth,provider);
  }catch(e){
   console.error('Google login failed',e);
-  if(['auth/popup-blocked','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment'].includes(e?.code)){
-   setLoginStatus('登入視窗被阻擋，正在改用頁面跳轉登入。');
-   try{sessionStorage.setItem('fs_auth_pending','1');await signInWithRedirect(auth,provider);return}catch(re){e=re}
-  }
-  setLoginStatus(authErrorText(e),'error');
-  if(btn){btn.disabled=false;btn.textContent='重新使用 Google 登入'}
+  const code=e?.code||'';
+  let msg='Google 登入失敗。';
+  if(code==='auth/popup-blocked')msg='瀏覽器封鎖了登入視窗。請允許此網站的彈出式視窗後再試一次。';
+  else if(code==='auth/popup-closed-by-user')msg='登入視窗已關閉，尚未完成登入。';
+  else if(code==='auth/unauthorized-domain')msg='目前網站網域尚未加入 Firebase 授權網域。';
+  else if(code==='auth/network-request-failed')msg='網路連線失敗，請確認網路後再試一次。';
+  else if(e?.message)msg+='\n\n'+e.message;
+  alert(msg);
  }
-};
-getRedirectResult(auth).then(result=>{
- if(result?.user)setLoginStatus('Google 登入成功，正在載入資料…','ok');
- else if(sessionStorage.getItem('fs_auth_pending'))setLoginStatus('尚未完成 Google 登入，請再按一次登入。','error');
- sessionStorage.removeItem('fs_auth_pending')
-}).catch(e=>{sessionStorage.removeItem('fs_auth_pending');setLoginStatus(authErrorText(e),'error');const b=document.getElementById('googleLoginBtn');if(b){b.disabled=false;b.textContent='重新使用 Google 登入'}});
-window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
+};window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
 function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
@@ -1776,45 +1748,14 @@ window.calibrationNext=()=>{
 };
 window.calibrationPrev=()=>showCalibrationStep(calibrationStep-1);
 
-
-function browserMicHelp(){
- const samsung=/SamsungBrowser/i.test(navigator.userAgent);
- const embedded=/(FBAN|FBAV|Instagram|Line\/|MicroMessenger|; wv\))/i.test(navigator.userAgent);
- let extra=embedded?'目前可能是 App 內建瀏覽器，請使用右上角選單改用 Samsung Internet 或 Chrome 開啟。':samsung?'請點網址列左側的鎖頭／網站資訊 → 權限 → 麥克風 → 允許，再重新整理。':'請點網址列旁的網站資訊 → 權限 → 麥克風 → 允許，再重新整理。';
- return extra+' 同時確認手機「設定 → 應用程式 → 瀏覽器 → 權限 → 麥克風」已允許。'
-}
-function showMicError(e,target){
- const name=e?.name||'',msg=e?.message||'';let text='無法啟用麥克風。';
- if(!window.isSecureContext)text='此頁面不是安全連線，瀏覽器不允許使用麥克風。';
- else if(name==='NotAllowedError'||name==='PermissionDeniedError'||/denied/i.test(msg))text='麥克風權限目前被拒絕。'+browserMicHelp();
- else if(name==='NotFoundError'||name==='DevicesNotFoundError')text='找不到可用的麥克風，請確認裝置麥克風正常。';
- else if(name==='NotReadableError'||name==='TrackStartError')text='麥克風正被其他 App 使用，請關閉錄音、相機或通話 App 後再試。';
- else if(name==='OverconstrainedError')text='裝置不支援指定的收音設定，請再試一次。';
- else text+=' '+esc(msg);
- if(target)target.innerHTML='✗ '+esc(text);
- modalOpen('麥克風無法啟用',`<div class="notice" style="line-height:1.8"><b>${esc(text)}</b><br><br>設定完成後，請關閉此視窗並重新按「啟用麥克風」或「開始收音」。</div>`)
-}
-async function requestMicrophone(){
- if(!window.isSecureContext)throw new DOMException('需要 HTTPS 安全連線','NotAllowedError');
- if(!navigator.mediaDevices?.getUserMedia)throw new DOMException('此瀏覽器不支援網頁麥克風','NotSupportedError');
- try{
-  if(navigator.permissions?.query){const p=await navigator.permissions.query({name:'microphone'}).catch(()=>null);if(p?.state==='denied')throw new DOMException('Permission denied','NotAllowedError')}
-  // 先以最相容的基本設定要求權限，取得後再嘗試停用自動音訊處理。
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  const track=stream.getAudioTracks()[0];
-  try{await track?.applyConstraints({echoCancellation:false,noiseSuppression:false,autoGainControl:false})}catch(_){ }
-  return stream
- }catch(e){throw e}
-}
-
 window.requestCalibrationMic=async()=>{
  try{
-  calibrationStream=await requestMicrophone();
+  calibrationStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   calibrationCtx=new (window.AudioContext||window.webkitAudioContext)();
   const source=calibrationCtx.createMediaStreamSource(calibrationStream);
   calibrationAnalyser=calibrationCtx.createAnalyser();calibrationAnalyser.fftSize=2048;source.connect(calibrationAnalyser);
   calibrationData.mic=true;calMicResult.innerHTML='✓ 麥克風已啟用，可進行下一步。'
- }catch(e){showMicError(e,calMicResult)}
+ }catch(e){calMicResult.innerHTML='✗ 無法啟用麥克風：'+esc(e.message)}
 };
 
 window.measureBackgroundNoise=async()=>{
@@ -1968,12 +1909,12 @@ function audioAssessmentLoop(){
 window.startAudioAssessment=async()=>{
  if(audioAssessStream)return;
  try{
-  audioAssessStream=await requestMicrophone();
+  audioAssessStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   audioAssessCtx=new (window.AudioContext||window.webkitAudioContext)();
   audioSourceNode=audioAssessCtx.createMediaStreamSource(audioAssessStream);audioAnalyser=audioAssessCtx.createAnalyser();audioAnalyser.fftSize=2048;audioAnalyser.smoothingTimeConstant=.15;audioSourceNode.connect(audioAnalyser);
   audioAssessStartedAt=performance.now();audioPitchFrames=[];audioOnsets=[];audioLastRms=0;audioLastOnsetAt=0;
   micPermissionState.textContent='收音中｜請學生開始演唱或演奏';audioAssessmentLoop()
- }catch(e){micPermissionState.textContent='無法取得麥克風權限';showMicError(e,micPermissionState)}
+ }catch(e){micPermissionState.textContent='無法取得麥克風權限';alert('麥克風啟用失敗：'+e.message)}
 };
 window.stopAudioAssessment=()=>{
  if(audioFrameId)cancelAnimationFrame(audioFrameId);audioFrameId=null;
@@ -2296,11 +2237,11 @@ window.runSystemHealthCheck=()=>{
 };
 window.showVersionInfo=()=>{
  modalOpen('FairSing AI 版本資訊',`
-  <div class="release-note"><h3>FairSing AI v3.2.0 手機相容修正版</h3>
-  <p>發布日期：2026-08-06</p>
+  <div class="release-note"><h3>FairSing AI v3.0.0 正式版</h3>
+  <p>發布日期：2026-08-02</p>
   <p>通道：Stable</p>
   <p>核心：Dashboard、課表日曆、班級學生、評量模板、FairDraw、Assessment、音樂知識、Curriculum、課程控制、Reports、設定。</p>
-  <p>修正 Samsung Internet Google 登入、Firebase 同網域 Redirect，以及 Android 麥克風權限錯誤提示。</p><p>建議正式上課前先以測試班級完整走過一次流程。</p></div>`)
+  <p>建議正式上課前先以測試班級完整走過一次流程。</p></div>`)
 };
 
 window.saveSettings=()=>{S.settings={sw:+sw.value||80,tw:+tw.value||20};save()};window.exportJson=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download=`FairSing_AI_完整備份_${excelBackupStamp()}.json`;a.click()};
