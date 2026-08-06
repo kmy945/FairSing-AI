@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI 5.1 Professional｜AI 音樂評量平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI 5.2 Professional｜安心評量修正版</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
 :root{--b:#173c67;--a:#65d1c9;--p:#ff88a4;--bg:#f3f8fc;--line:#dce7ef}*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC",sans-serif;background:var(--bg);color:#24364b}button,input,select,textarea{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#eefaff,#fff4f7)}.box,.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 32px #173c6712}.box{width:min(520px,100%);padding:30px;text-align:center}.logo{width:130px;height:130px;border-radius:50%;margin:auto;display:grid;place-items:center;font-size:68px;background:radial-gradient(circle at 35% 25%,#fff,#d7fbff 28%,#68d3cc 65%,#347fa8)}.btn{border:0;border-radius:13px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#4d8fd8,#7882e6);color:#fff}.ghost{background:#fff;border:1px solid var(--line)}.danger{background:#e65d70;color:#fff}.top{background:linear-gradient(120deg,var(--b),#2e719f);color:#fff;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:22px;font-weight:950}.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px)}nav{background:#fff;border-right:1px solid var(--line);padding:14px}.nav{width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:13px;font-weight:750}.nav.active,.nav:hover{background:#e9f7f7}main{padding:18px}.page{display:none}.page.active{display:block}.hero{background:linear-gradient(135deg,#173c67,#2e72a2 60%,#49a9b9);color:#fff;border-radius:28px;padding:26px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{padding:16px}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}label{display:block;font-size:13px;color:#6f8095;margin:9px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px}textarea{min-height:80px}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.muted{color:#718096}.kpi{font-size:36px;font-weight:950}.seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}.seat{padding:10px;border:1px solid var(--line);border-radius:13px;background:#fff}.seat.active{background:var(--a)}.seat.done{outline:3px solid #37b978}.modal{position:fixed;inset:0;background:#10233eaa;display:none;place-items:center;padding:15px}.modal.open{display:grid}.dialog{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:18px}@media(max-width:850px){.shell{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{min-width:max-content}.s4,.s6,.s8{grid-column:span 12}}
 
 .export-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fbfd}.export-panel label{margin-top:0}.export-note{font-size:13px;color:#66798f}.export-checks{display:flex;gap:14px;flex-wrap:wrap;margin:9px 0}.export-checks label{display:flex;gap:6px;align-items:center;margin:0;color:#33465b}.export-checks input{width:auto}.excel-ok{color:#2b9d68;font-weight:800}.excel-bad{color:#d95769;font-weight:800}@media(max-width:720px){.export-panel{grid-template-columns:1fr}}
@@ -226,6 +226,17 @@
    <h3>考試隊列</h3>
    <label>名單</label><select id="assessClass" onchange="aeClassChanged()"></select>
    <label>評量模板</label><select id="assessTemplate" onchange="aeTemplateChanged()"></select>
+   <label>應考對象</label>
+   <select id="aeCandidateMode" onchange="candidateModeChanged()">
+    <option value="all" selected>全班學生</option>
+    <option value="single">單一學生</option>
+    <option value="makeup">缺考／補考／重測名單</option>
+    <option value="temporary">臨時應考名單</option>
+   </select>
+   <div id="aeSingleCandidateWrap" style="display:none"><label>指定學生</label><select id="aeSingleCandidate" onchange="buildAssessmentQueue()"></select></div>
+   <div id="aeTemporaryWrap" style="display:none"><label>臨時名單（每行一位，可輸入「座號 姓名」）</label><textarea id="aeTemporaryCandidates" rows="4" placeholder="例如：
+01 王小明
+02 李小華" oninput="buildAssessmentQueue()"></textarea></div>
    <label>排序方式</label>
    <select id="aeOrderMode" onchange="buildAssessmentQueue()">
     <option value="saved">已儲存考試順序</option>
@@ -294,7 +305,8 @@
    <div class="s4"><label>BPM</label><input id="audioAssessBpm" type="number" min="40" max="200" value="80"></div>
    <div class="s4"><label>允許音準誤差</label><select id="pitchTolerance"><option value="35">±35 cents</option><option value="50" selected>±50 cents</option><option value="75">±75 cents</option></select></div>
    <div class="s4"><label>最短評量秒數</label><input id="minAssessSeconds" type="number" min="3" max="300" value="10"></div>
-   <div class="s4"><label>評分標準</label><select id="scoringProfile" onchange="applyAssessmentPreset()"><option value="classroom" selected>一般班級考試（鼓勵與達標）</option><option value="music">音樂班術科（精準與技巧）</option><option value="competition">歌唱比賽（技巧、音色、情感）</option></select></div>
+   <div class="s4"><label>評分標準</label><select id="scoringProfile" onchange="applyAssessmentPreset()"><option value="classroom" selected>一般班級考試（公平、鼓勵但不送分）</option><option value="music">音樂班術科（專業、較嚴謹）</option><option value="competition">歌唱比賽（技巧、音色、情感與舞台）</option></select></div>
+   <div class="s4"><label>評分強度</label><select id="scoringStrictness" onchange="calculateAudioScores()"><option value="gentle">較寬鬆</option><option value="standard" selected>標準</option><option value="strict">較嚴格</option></select></div>
    <div class="s4"><label>評量項目</label><select id="assessmentItem" onchange="applyAssessmentPreset()"><option value="auto" selected>依評量模板自動判斷</option><option value="vocal">歌唱</option><option value="recorder">中音直笛</option><option value="percussion">節奏打擊</option><option value="keyboard">鍵盤／鋼琴</option><option value="customInstrument">其他樂器</option></select></div>
    <div class="s4"><label>人聲／收音門檻</label><select id="voiceGate"><option value="low">較寬鬆</option><option value="normal" selected>一般</option><option value="high">較嚴格</option></select></div>
    <div class="s12"><label>歌詞參考（選填，歌唱咬字評語使用）</label><textarea id="lyricsReference" rows="2" placeholder="可貼上本次演唱歌詞；未填時只評估發音清晰度，不判斷歌詞正確與否。"></textarea></div>
@@ -1882,11 +1894,19 @@ function drawPitchTrace(){
  recent.forEach((f,i)=>{if(!Number.isFinite(f.midi))return;const x=i/Math.max(1,recent.length-1)*w,y=h-((f.midi-min)/span*h);if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y)});ctx.stroke()
 }
 function scoringConfig(){
- const p=scoringProfile?.value||'classroom';
- // 三種情境不是只改分數底線，也改容許度、權重與回饋語氣。
- if(p==='music')return {pitchFloor:52,pitchScale:.48,rhythmFloor:62,rhythmScale:.38,rhythmWindow:.16,coverageTarget:.56,label:'音樂班術科',weights:{pitch:.38,rhythm:.27,technique:.20,complete:.15}};
- if(p==='competition')return {pitchFloor:60,pitchScale:.40,rhythmFloor:66,rhythmScale:.34,rhythmWindow:.20,coverageTarget:.50,label:'歌唱比賽',weights:{pitch:.27,rhythm:.18,technique:.35,complete:.20}};
- return {pitchFloor:72,pitchScale:.28,rhythmFloor:78,rhythmScale:.22,rhythmWindow:.32,coverageTarget:.42,label:'一般班級考試',weights:{pitch:.30,rhythm:.25,technique:.20,complete:.25}};
+ const p=scoringProfile?.value||'classroom',strict=scoringStrictness?.value||'standard';
+ // 分數不設過高保護底線；一般班公平但不送分，音樂班與比賽保有鑑別度。
+ const profiles={
+  classroom:{pitchFloor:48,pitchScale:.52,rhythmFloor:50,rhythmScale:.50,rhythmWindow:.30,coverageTarget:.42,label:'一般班級考試',weights:{pitch:.30,rhythm:.25,technique:.20,complete:.25}},
+  music:{pitchFloor:34,pitchScale:.66,rhythmFloor:38,rhythmScale:.62,rhythmWindow:.16,coverageTarget:.56,label:'音樂班術科',weights:{pitch:.38,rhythm:.27,technique:.20,complete:.15}},
+  competition:{pitchFloor:40,pitchScale:.60,rhythmFloor:44,rhythmScale:.56,rhythmWindow:.20,coverageTarget:.50,label:'歌唱比賽',weights:{pitch:.27,rhythm:.18,technique:.35,complete:.20}}
+ };
+ const c=structuredClone(profiles[p]||profiles.classroom);
+ const mod=strict==='gentle'?{floor:6,scale:.94,window:1.22}:strict==='strict'?{floor:-6,scale:1.06,window:.82}:{floor:0,scale:1,window:1};
+ c.pitchFloor=Math.max(0,c.pitchFloor+mod.floor);c.rhythmFloor=Math.max(0,c.rhythmFloor+mod.floor);
+ c.pitchScale*=mod.scale;c.rhythmScale*=mod.scale;c.rhythmWindow*=mod.window;
+ c.label+=`／${strict==='gentle'?'較寬鬆':strict==='strict'?'較嚴格':'標準'}`;
+ return c
 }
 function currentAssessmentTemplateType(){
  try{return aeTemplate()?.type||''}catch(e){return ''}
@@ -2020,13 +2040,14 @@ function calculateAudioScores(){
    const errs=intervals.map(ioi=>{const mult=Math.max(1,Math.round(ioi/beatMs));return Math.abs(ioi-mult*beatMs)/(mult*beatMs)});
    const window=reliableRhythm?cfg.rhythmWindow:Math.max(.42,cfg.rhythmWindow*1.8);
    let raw=clamp(100-(median(errs)/window)*24-(percentile(errs,.85)/window)*13);
-   if(!reliableRhythm)raw=Math.max(58,raw);
+   if(!reliableRhythm)raw=Math.max(42,raw);
    rhythmScore=clamp(cfg.rhythmFloor+raw*cfg.rhythmScale);
   }
  }
  if(rhythmScore===null&&elapsed>=Math.min(8,(+minAssessSeconds.value||10))){
-  rhythmScore=scoringProfile?.value==='music'?74:scoringProfile?.value==='competition'?80:86;
-  rhythmMetric=reliableRhythm?'拍點資料較少，採保守參考':'人聲起音資料較少，採中性參考';
+  // 資料不足時不虛構高分；顯示待教師判讀，且不列入 AI 總分。
+  rhythmScore=null;
+  rhythmMetric=reliableRhythm?'拍點資料不足，請老師判讀':'人聲起音資料不足，本次節奏不列入 AI 總分';
  }
 
  // 技巧分依項目切換。這些是可解釋的聲學代理值，不冒充人工觀察。
@@ -2048,7 +2069,7 @@ function calculateAudioScores(){
   }else{
    techniqueScore=clamp(68+medianClarity*24-rmsSpread*80);techniqueMetric=item==='keyboard'?'流暢度與力度穩定':'技巧與音色穩定度';
   }
-  if(scoringProfile?.value==='classroom')techniqueScore=clamp(78+(techniqueScore-50)*.44);
+  if(scoringProfile?.value==='classroom')techniqueScore=clamp(62+(techniqueScore-50)*.72);
  }
 
  updateDurationBadge();
@@ -2107,7 +2128,7 @@ window.stopAudioAssessment=()=>{
  audioAssessStream?.getTracks().forEach(t=>t.stop());audioAssessStream=null;
  try{audioAssessCtx?.close()}catch(e){} audioAssessCtx=null;audioAnalyser=null;
  const scores=calculateAudioScores();micPermissionState.textContent=`已停止｜評量 ${scores.elapsed.toFixed(1)} 秒｜有效人聲 ${(scores.voiceCoverage*100).toFixed(0)}%`;
- S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.1.0',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
+ S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.2.0',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
  save()
 };
 
@@ -2122,12 +2143,31 @@ function setStudentStatus(studentId,status){
  const c=aeClass(),t=assessTemplate.value;if(!c||!studentId)return;
  S.studentStatuses=S.studentStatuses||{};S.studentStatuses[aeStatusKey(c.id,studentId,t)]=status
 }
-window.aeClassChanged=()=>{buildAssessmentQueue();renderAssessmentEngine()}
+window.aeClassChanged=()=>{populateCandidateSelectors();buildAssessmentQueue();renderAssessmentEngine()}
+window.candidateModeChanged=()=>{
+ const mode=aeCandidateMode?.value||'all';
+ if(window.aeSingleCandidateWrap)aeSingleCandidateWrap.style.display=mode==='single'?'block':'none';
+ if(window.aeTemporaryWrap)aeTemporaryWrap.style.display=mode==='temporary'?'block':'none';
+ buildAssessmentQueue();renderAssessmentEngine()
+}
+function populateCandidateSelectors(){
+ const c=aeClass();if(!window.aeSingleCandidate)return;
+ aeSingleCandidate.innerHTML=(c?.students||[]).map(s=>`<option value="${s.id}">${esc(s.no||'—')}｜${esc(s.name||'未命名')}</option>`).join('')
+}
+function parseTemporaryCandidates(){
+ return (aeTemporaryCandidates?.value||'').split(/\n+/).map((line,i)=>line.trim()).filter(Boolean).map((line,i)=>{
+  const m=line.match(/^(\S+)\s+(.+)$/);return {id:`temp-${i}-${line}`,no:m?m[1]:String(i+1),name:m?m[2]:line,temporary:true}
+ })
+}
 window.aeTemplateChanged=()=>{updateMetroMode();buildAssessmentQueue();renderAssessmentEngine()}
+setTimeout(()=>{populateCandidateSelectors();candidateModeChanged()},0);
 window.buildAssessmentQueue=()=>{
  const c=aeClass();if(!c){S.assessmentQueue=null;renderAssessmentEngine();return}
- let students=[...c.students],mode=aeOrderMode?.value||'saved';
- if(mode==='saved'){
+ let students=[...c.students],mode=aeOrderMode?.value||'saved',candidateMode=aeCandidateMode?.value||'all';
+ if(candidateMode==='single')students=students.filter(s=>s.id===aeSingleCandidate?.value);
+ else if(candidateMode==='makeup')students=students.filter(s=>['absent','retest','makeup'].includes(getStudentStatus(s.id)));
+ else if(candidateMode==='temporary')students=parseTemporaryCandidates();
+ if(mode==='saved'&&candidateMode!=='temporary'){
   const ids=S.orders?.[c.id]||students.map(s=>s.id);
   students=ids.map(id=>c.students.find(s=>s.id===id)).filter(Boolean)
  }else if(mode==='seat')students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
