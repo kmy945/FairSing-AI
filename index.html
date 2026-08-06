@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI v3.0 正式版｜音樂教師智慧教學平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI 5.1 Professional｜AI 音樂評量平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
 :root{--b:#173c67;--a:#65d1c9;--p:#ff88a4;--bg:#f3f8fc;--line:#dce7ef}*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC",sans-serif;background:var(--bg);color:#24364b}button,input,select,textarea{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#eefaff,#fff4f7)}.box,.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 32px #173c6712}.box{width:min(520px,100%);padding:30px;text-align:center}.logo{width:130px;height:130px;border-radius:50%;margin:auto;display:grid;place-items:center;font-size:68px;background:radial-gradient(circle at 35% 25%,#fff,#d7fbff 28%,#68d3cc 65%,#347fa8)}.btn{border:0;border-radius:13px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#4d8fd8,#7882e6);color:#fff}.ghost{background:#fff;border:1px solid var(--line)}.danger{background:#e65d70;color:#fff}.top{background:linear-gradient(120deg,var(--b),#2e719f);color:#fff;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:22px;font-weight:950}.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px)}nav{background:#fff;border-right:1px solid var(--line);padding:14px}.nav{width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:13px;font-weight:750}.nav.active,.nav:hover{background:#e9f7f7}main{padding:18px}.page{display:none}.page.active{display:block}.hero{background:linear-gradient(135deg,#173c67,#2e72a2 60%,#49a9b9);color:#fff;border-radius:28px;padding:26px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{padding:16px}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}label{display:block;font-size:13px;color:#6f8095;margin:9px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px}textarea{min-height:80px}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.muted{color:#718096}.kpi{font-size:36px;font-weight:950}.seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}.seat{padding:10px;border:1px solid var(--line);border-radius:13px;background:#fff}.seat.active{background:var(--a)}.seat.done{outline:3px solid #37b978}.modal{position:fixed;inset:0;background:#10233eaa;display:none;place-items:center;padding:15px}.modal.open{display:grid}.dialog{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:18px}@media(max-width:850px){.shell{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{min-width:max-content}.s4,.s6,.s8{grid-column:span 12}}
 
 .export-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fbfd}.export-panel label{margin-top:0}.export-note{font-size:13px;color:#66798f}.export-checks{display:flex;gap:14px;flex-wrap:wrap;margin:9px 0}.export-checks label{display:flex;gap:6px;align-items:center;margin:0;color:#33465b}.export-checks input{width:auto}.excel-ok{color:#2b9d68;font-weight:800}.excel-bad{color:#d95769;font-weight:800}@media(max-width:720px){.export-panel{grid-template-columns:1fr}}
@@ -267,11 +267,23 @@
 
  <canvas id="pitchTraceCanvas" width="900" height="220"></canvas>
 
+ <div class="card" style="margin-top:12px;background:#fffaf0;border:2px solid #f0d99a">
+  <div class="row between"><div><h3 style="margin:0">⏱️ 樂曲總長／評量時間</h3><div class="muted">可自動估算，也可由老師手動輸入；手動設定具有最高優先權。</div></div><span id="durationSetBadge" class="level warn">自動判斷</span></div>
+  <div class="grid" style="margin-top:10px;align-items:end">
+   <div class="s3"><label>長度模式</label><select id="durationMode" onchange="durationModeChanged()"><option value="auto" selected>自動判斷</option><option value="manual">手動輸入</option><option value="off">不評完整度</option></select></div>
+   <div class="s3"><label>分鐘</label><input id="targetAssessMinutes" type="number" min="0" max="20" value="3" inputmode="numeric" oninput="syncManualDuration()"></div>
+   <div class="s3"><label>秒數</label><input id="targetAssessRemainSeconds" type="number" min="0" max="59" value="0" inputmode="numeric" oninput="syncManualDuration()"></div>
+   <div class="s3"><label>換算總秒數</label><input id="targetAssessSeconds" type="number" min="0" max="1200" value="0" readonly></div>
+   <div class="s12"><label>快速設定</label><div class="row" style="flex-wrap:wrap"><button type="button" class="btn ghost" onclick="setAssessDuration(60)">1:00</button><button type="button" class="btn ghost" onclick="setAssessDuration(120)">2:00</button><button type="button" class="btn ghost" onclick="setAssessDuration(180)">3:00</button><button type="button" class="btn ghost" onclick="setAssessDuration(240)">4:00</button><button type="button" class="btn ghost" onclick="setAssessDuration(300)">5:00</button><button type="button" class="btn ghost" onclick="setAssessDuration(0)">改用自動判斷</button></div></div>
+  </div>
+ </div>
+
  <div class="grid">
   <div class="card s3"><h3 id="pitchScoreLabel">AI 音準參考</h3><div id="aiPitchScore" class="kpi">—</div><small id="pitchScoreHint" class="muted">等待收音</small></div>
-  <div class="card s3"><h3 id="rhythmScoreLabel">節奏參考</h3><div id="aiRhythmScore" class="kpi">—</div><small id="rhythmScoreHint" class="muted">需有可靠節拍基準</small></div>
-  <div class="card s3"><h3>完整度參考</h3><div id="aiCompletenessScore" class="kpi">—</div><small id="completeScoreHint" class="muted">需設定預計演唱秒數</small></div>
-  <div class="card s3"><h3>AI 建議分數</h3><div id="aiAudioTotal" class="kpi">—</div><small id="totalScoreHint" class="muted">僅供教師參考</small></div>
+  <div class="card s3"><h3 id="rhythmScoreLabel">節奏表現參考</h3><div id="aiRhythmScore" class="kpi">—</div><small id="rhythmScoreHint" class="muted">依評量項目切換判定方式</small></div>
+  <div class="card s3"><h3 id="techniqueScoreLabel">技巧／表現參考</h3><div id="aiTechniqueScore" class="kpi">—</div><small id="techniqueScoreHint" class="muted">歌唱：換氣與咬字；直笛：運舌與換氣；打擊：力度與穩定</small></div>
+  <div class="card s3"><h3>完整度參考</h3><div id="aiCompletenessScore" class="kpi">—</div><small id="completeScoreHint" class="muted">可自動或手動設定時間</small></div>
+  <div class="card s12"><div class="row between"><div><h3 style="margin:0">AI 建議分數</h3><small id="totalScoreHint" class="muted">僅供教師參考，老師保有最後決定權</small></div><div id="aiAudioTotal" class="kpi">—</div></div></div>
  </div>
 
  <details style="margin-top:10px">
@@ -282,9 +294,10 @@
    <div class="s4"><label>BPM</label><input id="audioAssessBpm" type="number" min="40" max="200" value="80"></div>
    <div class="s4"><label>允許音準誤差</label><select id="pitchTolerance"><option value="35">±35 cents</option><option value="50" selected>±50 cents</option><option value="75">±75 cents</option></select></div>
    <div class="s4"><label>最短評量秒數</label><input id="minAssessSeconds" type="number" min="3" max="300" value="10"></div>
-   <div class="s4"><label>評分模式</label><select id="scoringProfile"><option value="classroom" selected>課堂友善（一般班）</option><option value="standard">標準（音樂課）</option><option value="strict">專業（音樂班／比賽）</option></select></div>
-   <div class="s4"><label>預計演唱秒數</label><input id="targetAssessSeconds" type="number" min="0" max="600" value="0" placeholder="未設定則不評完整度"><small class="muted">未設定時，完整度顯示「—」，不會送分。</small></div>
-   <div class="s4"><label>人聲門檻</label><select id="voiceGate"><option value="low">較寬鬆</option><option value="normal" selected>一般</option><option value="high">較嚴格</option></select></div>
+   <div class="s4"><label>評分標準</label><select id="scoringProfile" onchange="applyAssessmentPreset()"><option value="classroom" selected>一般班級考試（鼓勵與達標）</option><option value="music">音樂班術科（精準與技巧）</option><option value="competition">歌唱比賽（技巧、音色、情感）</option></select></div>
+   <div class="s4"><label>評量項目</label><select id="assessmentItem" onchange="applyAssessmentPreset()"><option value="auto" selected>依評量模板自動判斷</option><option value="vocal">歌唱</option><option value="recorder">中音直笛</option><option value="percussion">節奏打擊</option><option value="keyboard">鍵盤／鋼琴</option><option value="customInstrument">其他樂器</option></select></div>
+   <div class="s4"><label>人聲／收音門檻</label><select id="voiceGate"><option value="low">較寬鬆</option><option value="normal" selected>一般</option><option value="high">較嚴格</option></select></div>
+   <div class="s12"><label>歌詞參考（選填，歌唱咬字評語使用）</label><textarea id="lyricsReference" rows="2" placeholder="可貼上本次演唱歌詞；未填時只評估發音清晰度，不判斷歌詞正確與否。"></textarea></div>
   </div>
  </details>
  <div class="card" style="margin-top:12px;border:2px solid #d7e8f2;background:#f8fcff">
@@ -846,7 +859,7 @@ const norm=x=>({...structuredClone(D),...x,settings:{...D.settings,...(x?.settin
 window.googleLogin=async()=>{try{/Android|iPhone|iPad/i.test(navigator.userAgent)?await signInWithRedirect(auth,provider):await signInWithPopup(auth,provider)}catch(e){alert(e.message)}};window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
-function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
+function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
 window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save()};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){S.classes=S.classes.filter(c=>c.id!==id);save()}};
 function renderClasses(){let c=S.classes.find(x=>x.id===selClass)||S.classes[0];if(c)selClass=c.id;classList.innerHTML=S.classes.map(x=>`<div class="row between" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn ${x.id===selClass?'primary':'ghost'}" onclick="pickClass('${x.id}')">${esc(x.name)}（${x.students.length}）</button><button class="btn danger" onclick="delClass('${x.id}')">刪除</button></div>`).join('')||'尚無班級';studentTitle.textContent=c?c.name:'學生';studentList.innerHTML=c?.students.length?`<table><tr><th>座號</th><th>姓名</th><th></th></tr>${c.students.map(s=>`<tr><td>${esc(s.no)}</td><td>${esc(s.name||'未填')}</td><td><button class="btn danger" onclick="delStudent('${s.id}')">刪除</button></td></tr>`).join('')}</table>`:'尚無學生'}
 window.openStudent=()=>{if(!selClass)return alert('請先建立班級');modalOpen('新增學生','<label>座號</label><input id="sno"><label>姓名（選填）</label><input id="sname"><button class="btn primary" style="margin-top:12px" onclick="addStudent()">新增</button>')};window.addStudent=()=>{let c=S.classes.find(x=>x.id===selClass),no=sno.value.trim();if(!c||!no)return;c.students.push({id:crypto.randomUUID(),no,name:sname.value.trim()});c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));closeModal();save()};window.delStudent=id=>{let c=S.classes.find(x=>x.id===selClass);if(c&&confirm('刪除學生？')){c.students=c.students.filter(s=>s.id!==id);save()}};
@@ -1870,15 +1883,35 @@ function drawPitchTrace(){
 }
 function scoringConfig(){
  const p=scoringProfile?.value||'classroom';
- return p==='strict'
-  ?{pitchFloor:0,pitchScale:1,rhythmWindow:.12,coverageTarget:.60,label:'專業'}
-  :p==='standard'
-   ?{pitchFloor:45,pitchScale:.55,rhythmWindow:.20,coverageTarget:.52,label:'標準'}
-   :{pitchFloor:62,pitchScale:.38,rhythmWindow:.30,coverageTarget:.44,label:'課堂友善'}
+ // 三種情境不是只改分數底線，也改容許度、權重與回饋語氣。
+ if(p==='music')return {pitchFloor:52,pitchScale:.48,rhythmFloor:62,rhythmScale:.38,rhythmWindow:.16,coverageTarget:.56,label:'音樂班術科',weights:{pitch:.38,rhythm:.27,technique:.20,complete:.15}};
+ if(p==='competition')return {pitchFloor:60,pitchScale:.40,rhythmFloor:66,rhythmScale:.34,rhythmWindow:.20,coverageTarget:.50,label:'歌唱比賽',weights:{pitch:.27,rhythm:.18,technique:.35,complete:.20}};
+ return {pitchFloor:72,pitchScale:.28,rhythmFloor:78,rhythmScale:.22,rhythmWindow:.32,coverageTarget:.42,label:'一般班級考試',weights:{pitch:.30,rhythm:.25,technique:.20,complete:.25}};
 }
 function currentAssessmentTemplateType(){
  try{return aeTemplate()?.type||''}catch(e){return ''}
 }
+function currentAssessmentItem(){
+ const chosen=window.assessmentItem?.value||'auto';
+ if(chosen!=='auto')return chosen;
+ const type=currentAssessmentTemplateType();
+ if(type==='recorder')return 'recorder';
+ if(type==='percussion')return 'percussion';
+ if(type==='customInstrument')return 'customInstrument';
+ if(type==='keyboard')return 'keyboard';
+ return 'vocal';
+}
+window.applyAssessmentPreset=()=>{
+ const item=currentAssessmentItem(),profile=scoringProfile?.value||'classroom';
+ const labels={vocal:['AI 音準參考','節奏表現參考','換氣／咬字參考'],recorder:['音準參考','節奏參考','運舌／換氣參考'],percussion:['— 不評音準','節奏正確／穩定','力度／拍點控制'],keyboard:['音高正確參考','節奏參考','流暢／力度參考'],customInstrument:['音準／音高參考','節奏參考','技巧／音色參考']};
+ const a=labels[item]||labels.vocal;
+ if(window.pitchScoreLabel)pitchScoreLabel.textContent=a[0];
+ if(window.rhythmScoreLabel)rhythmScoreLabel.textContent=a[1];
+ if(window.techniqueScoreLabel)techniqueScoreLabel.textContent=a[2];
+ if(item==='percussion'&&window.referenceMode)referenceMode.value='none';
+ const tol=profile==='music'?35:profile==='competition'?45:65;
+ if(window.pitchTolerance)pitchTolerance.value=String(tol);
+};
 function hasReliablePitchReference(){return getReferenceMidi().length>0}
 function hasReliableRhythmReference(){
  const type=currentAssessmentTemplateType();
@@ -1890,6 +1923,45 @@ function classroomNormalize(raw){
  const cfg=scoringConfig();
  return clamp(cfg.pitchFloor+raw*cfg.pitchScale)
 }
+function classroomRhythmNormalize(raw){
+ const cfg=scoringConfig();
+ return clamp(cfg.rhythmFloor+raw*cfg.rhythmScale)
+}
+function extractVoicePhraseOnsets(frames){
+ const starts=[];let lastVoiced=false,lastVoiceAt=-Infinity;
+ for(const f of frames){
+  const t=Number(f.t)||0;
+  if(f.voiced&&!lastVoiced&&t-lastVoiceAt>=220)starts.push(t);
+  if(f.voiced)lastVoiceAt=t;
+  lastVoiced=!!f.voiced;
+ }
+ return starts
+}
+window.setAssessDuration=seconds=>{
+ if(!window.durationMode)return;
+ if((+seconds||0)>0){durationMode.value='manual';targetAssessMinutes.value=String(Math.floor(seconds/60));targetAssessRemainSeconds.value=String(seconds%60)}
+ else durationMode.value='auto';
+ syncManualDuration();calculateAudioScores()
+};
+window.durationModeChanged=()=>{syncManualDuration();calculateAudioScores()};
+window.syncManualDuration=()=>{
+ if(!window.targetAssessSeconds)return;
+ const mode=durationMode?.value||'auto';
+ const min=Math.max(0,+targetAssessMinutes?.value||0),sec=Math.max(0,Math.min(59,+targetAssessRemainSeconds?.value||0));
+ targetAssessSeconds.value=mode==='manual'?String(min*60+sec):'0';
+ const disabled=mode!=='manual';
+ if(window.targetAssessMinutes)targetAssessMinutes.disabled=disabled;
+ if(window.targetAssessRemainSeconds)targetAssessRemainSeconds.disabled=disabled;
+ updateDurationBadge()
+};
+function updateDurationBadge(){
+ if(!window.durationSetBadge||!window.targetAssessSeconds)return;
+ const mode=durationMode?.value||'auto',sec=+targetAssessSeconds.value||0;
+ if(mode==='off'){durationSetBadge.textContent='不評完整度';durationSetBadge.className='level';return}
+ if(mode==='auto'){durationSetBadge.textContent='自動判斷';durationSetBadge.className='level good';return}
+ durationSetBadge.textContent=sec>0?`手動 ${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`:'請輸入時間';
+ durationSetBadge.className='level '+(sec>0?'good':'warn')
+}
 function scoreBand(score){
  if(score===null||!Number.isFinite(score))return '資料不足';
  if(score>=90)return '表現優良';
@@ -1899,98 +1971,108 @@ function scoreBand(score){
  return '建議由老師再確認';
 }
 function generateTeacherFeedback(scores){
- const strengths=[],tips=[];
- if(scores.pitchScore===null){
-  strengths.push('已偵測到人聲與音高變化');
-  tips.push('未提供參考旋律，本次只分析音高穩定度，不判定是否唱對旋律');
- }else if(scores.pitchScore>=88)strengths.push('音高整體穩定，長音控制自然');
- else if(scores.pitchScore>=75){strengths.push('大部分音高維持在合理範圍');tips.push('可將較不穩的句子放慢練習')}
- else tips.push('建議先以較舒服的音域逐句確認旋律，不必急著追求原調');
- if(scores.rhythmScore===null){
-  strengths.push('系統未以不可靠的伴奏收音判定節奏');
-  tips.push('若要評節奏，請使用節拍器、MIDI、MusicXML 或已設定的拍點基準');
- }else if(scores.rhythmScore>=88)strengths.push('起音與速度維持良好');
- else if(scores.rhythmScore>=75){strengths.push('整體速度大致穩定');tips.push('句尾與換氣後的起音可再對齊拍點')}
- else tips.push('建議先用較慢 BPM 跟節拍器念節奏，再加入旋律');
- if(scores.complete===null)tips.push('尚未設定預計演唱秒數，因此完整度不列入分數');
- else if(scores.complete>=88)strengths.push('演唱時間與有效人聲比例足夠');
- else if(scores.complete>=70)tips.push('部分區段停頓較久，可確認是否有漏唱或距離麥克風太遠');
- else tips.push('有效人聲偏少或提早停止，建議確認收音距離後再測一次');
+ const strengths=[],tips=[],item=scores.item||currentAssessmentItem(),profile=scoringConfig().label;
+ const label={vocal:'歌唱',recorder:'中音直笛',percussion:'節奏打擊',keyboard:'鍵盤',customInstrument:'樂器'}[item]||'演奏';
+ if(scores.pitchScore!==null){if(scores.pitchScore>=88)strengths.push(item==='recorder'?'音高與長音控制穩定':'音高表現穩定');else if(scores.pitchScore>=75)strengths.push('大部分音高維持在合理範圍');else tips.push(item==='recorder'?'可用長音逐音確認氣流與音準':'可先降速、分句確認旋律')}
+ if(item==='percussion')strengths.push('本模式不以音準作為評分項目');
+ if(scores.rhythmScore!==null){if(scores.rhythmScore>=88)strengths.push('拍點與速度維持良好');else if(scores.rhythmScore>=75)strengths.push('整體節奏大致穩定');else tips.push('可先降低 BPM，搭配節拍器分段練習')}
+ if(scores.techniqueScore!==null){
+  if(scores.techniqueScore>=88)strengths.push(item==='vocal'?'換氣自然、發音清楚':item==='recorder'?'運舌與換氣流暢':item==='percussion'?'力度與拍點控制穩定':'技巧與流暢度良好');
+  else tips.push(item==='vocal'?'換氣後起音與子音清晰度可再加強':item==='recorder'?'運舌要輕、換氣位置可先標在譜上':item==='percussion'?'注意每一下力度一致，避免越打越快':'可放慢速度練習動作銜接');
+ }
+ if(scores.complete!==null){if(scores.complete>=88)strengths.push('完成度良好');else tips.push('部分區段停頓較久，請確認是否漏唱、漏奏或收音距離不穩')}
+ if(item==='vocal'&&!(lyricsReference?.value||'').trim())tips.push('未提供歌詞，本次咬字只評估聲音清晰度，不判定歌詞是否正確');
  const conf=scores.confidence>=80?'AI 信心良好':scores.confidence>=55?'AI 信心普通，請老師一起判讀':'收音資料不足，不建議直接採用 AI 分數';
- return `優點：${strengths.length?strengths.join('；'):'已完成本次演唱與收音'}。\n建議：${tips.length?tips.join('；'):'維持目前方式繼續練習'}。\n${conf}。`;
+ return `評量：${label}｜標準：${profile}
+優點：${strengths.length?strengths.join('；'):'已完成本次評量'}。
+建議：${tips.length?tips.join('；'):'維持目前方式繼續練習'}。
+${conf}。`;
 }
 function calculateAudioScores(){
  const elapsed=Math.max(.1,(performance.now()-audioAssessStartedAt)/1000);
  const all=audioPitchFrames,valid=all.filter(f=>f.voiced&&Number.isFinite(f.midi));
- const ref=getReferenceMidi(),tol=(+pitchTolerance.value||50);
+ const item=currentAssessmentItem(),cfg=scoringConfig(),ref=getReferenceMidi(),tol=(+pitchTolerance.value||50);
  let pitchScore=null,pitchMetric='';
- if(valid.length>=8){
+ if(item!=='percussion'&&valid.length>=8){
   let raw=0;
   if(ref.length){
    const errors=[];
-   valid.forEach(f=>{
-    const progress=f.t/Math.max(1,elapsed*1000),target=ref[Math.min(ref.length-1,Math.floor(progress*ref.length))];
-    errors.push(Math.abs((f.midi-target)*100));
-   });
+   valid.forEach(f=>{const progress=f.t/Math.max(1,elapsed*1000),target=ref[Math.min(ref.length-1,Math.floor(progress*ref.length))];errors.push(Math.abs((f.midi-target)*100))});
    const cap=percentile(errors,.90),trimmed=errors.filter(x=>x<=cap),avg=trimmed.reduce((a,b)=>a+b,0)/Math.max(1,trimmed.length),within=errors.filter(x=>x<=tol).length/errors.length;
-   raw=clamp(within*72+(1-clamp(avg/(tol*3),0,1))*28);
-   pitchMetric='參考旋律比對';
+   raw=clamp(within*72+(1-clamp(avg/(tol*3),0,1))*28);pitchMetric='參考旋律／樂譜比對';
   }else{
-   // 沒有參考旋律時，不假裝判斷「唱對」。只評相鄰音高的穩定程度。
-   const smoothed=[];
-   for(let i=0;i<valid.length;i++){
-    const win=valid.slice(Math.max(0,i-2),i+3).map(x=>x.midi);
-    smoothed.push(median(win));
-   }
-   const jumps=smoothed.slice(1).map((m,i)=>Math.abs(m-smoothed[i])*100).filter(x=>x<500);
-   const medJump=median(jumps),p85=percentile(jumps,.85);
-   raw=clamp(100-medJump*.45-p85*.16);
-   pitchMetric='音高穩定度（無參考旋律）';
+   const smoothed=[];for(let i=0;i<valid.length;i++)smoothed.push(median(valid.slice(Math.max(0,i-2),i+3).map(x=>x.midi)));
+   const jumps=smoothed.slice(1).map((m,i)=>Math.abs(m-smoothed[i])*100).filter(x=>x<500),medJump=median(jumps),p85=percentile(jumps,.85);
+   raw=clamp(100-medJump*.34-p85*.11);pitchMetric=item==='recorder'?'音高與長音穩定度（無樂譜）':'音高穩定度（無參考旋律）';
   }
-  pitchScore=classroomNormalize(raw);
+  pitchScore=clamp(cfg.pitchFloor+raw*cfg.pitchScale);
  }
- const reliableRhythm=hasReliableRhythmReference();
- let rhythmScore=null,rhythmMetric=reliableRhythm?'節拍基準比對':'未提供可靠節拍基準';
- if(reliableRhythm&&audioOnsets.length>=3){
-  const bpm=+audioAssessBpm.value||80,beatMs=60000/bpm;
-  const intervals=audioOnsets.slice(1).map((t,i)=>t-audioOnsets[i]).filter(x=>x>100&&x<beatMs*5);
+ if(item==='percussion')pitchMetric='節奏打擊不評音準';
+
+ const reliableRhythm=hasReliableRhythmReference()||item==='percussion';
+ let rhythmScore=null,rhythmMetric=reliableRhythm?'節拍／樂譜基準比對':'演唱速度與起音穩定度';
+ const bpm=+audioAssessBpm.value||+metroBpm?.value||80,beatMs=60000/bpm;
+ const phraseOnsets=extractVoicePhraseOnsets(all);
+ const onsetPool=[...audioOnsets.map(t=>t-audioAssessStartedAt),...phraseOnsets].sort((a,b)=>a-b).filter((t,i,a)=>i===0||t-a[i-1]>140);
+ if(onsetPool.length>=3){
+  const intervals=onsetPool.slice(1).map((t,i)=>t-onsetPool[i]).filter(x=>x>120&&x<beatMs*10);
   if(intervals.length>=2){
    const errs=intervals.map(ioi=>{const mult=Math.max(1,Math.round(ioi/beatMs));return Math.abs(ioi-mult*beatMs)/(mult*beatMs)});
-   const window=scoringConfig().rhythmWindow;
-   const raw=clamp(100-(median(errs)/window)*34-(percentile(errs,.85)/window)*24);
-   rhythmScore=classroomNormalize(raw);
+   const window=reliableRhythm?cfg.rhythmWindow:Math.max(.42,cfg.rhythmWindow*1.8);
+   let raw=clamp(100-(median(errs)/window)*24-(percentile(errs,.85)/window)*13);
+   if(!reliableRhythm)raw=Math.max(58,raw);
+   rhythmScore=clamp(cfg.rhythmFloor+raw*cfg.rhythmScale);
   }
  }
- const target=+targetAssessSeconds.value||0;
- const voiceCoverage=valid.length/Math.max(1,all.length);
- let complete=null;
- if(target>0){
-  const durationProgress=clamp(elapsed/target,0,1);
-  // 完整度重視是否唱到預計時間；人聲比例只做輕度修正，避免換氣與間奏被誤扣。
-  const coverageAdequacy=clamp(voiceCoverage/Math.max(.18,scoringConfig().coverageTarget)*100);
-  complete=clamp(durationProgress*82+coverageAdequacy*.18);
+ if(rhythmScore===null&&elapsed>=Math.min(8,(+minAssessSeconds.value||10))){
+  rhythmScore=scoringProfile?.value==='music'?74:scoringProfile?.value==='competition'?80:86;
+  rhythmMetric=reliableRhythm?'拍點資料較少，採保守參考':'人聲起音資料較少，採中性參考';
  }
- // 信心值只反映資料品質，不代表唱得好壞。
- const frameConfidence=clamp(valid.length/90*100),coverageConfidence=clamp(voiceCoverage/.24*100);
- const confidence=clamp(frameConfidence*.55+coverageConfidence*.45);
- const weighted=[];
- if(pitchScore!==null)weighted.push([pitchScore,.65]);
- if(rhythmScore!==null)weighted.push([rhythmScore,.20]);
- if(complete!==null)weighted.push([complete,.15]);
- const weightSum=weighted.reduce((a,x)=>a+x[1],0);
- const total=weightSum?weighted.reduce((a,x)=>a+x[0]*x[1],0)/weightSum:null;
- const scores={pitchScore,rhythmScore,complete,total,elapsed,voiceCoverage,validFrames:valid.length,onsets:audioOnsets.length,confidence,pitchMetric,rhythmMetric};
- aiPitchScore.textContent=pitchScore===null?'—':pitchScore.toFixed(0);
- aiRhythmScore.textContent=rhythmScore===null?'—':rhythmScore.toFixed(0);
- aiCompletenessScore.textContent=complete===null?'—':complete.toFixed(0);
- aiAudioTotal.textContent=total===null?'—':total.toFixed(0);
- pitchScoreHint.textContent=pitchMetric||'有效人聲不足';
- rhythmScoreHint.textContent=rhythmMetric;
- completeScoreHint.textContent=target>0?`預計 ${target} 秒｜已評量 ${elapsed.toFixed(0)} 秒`:'未設定預計時間，不列入分數';
- totalScoreHint.textContent=total===null?'資料不足，請老師判讀':`${scoreBand(total)}｜僅供教師參考`;
+
+ // 技巧分依項目切換。這些是可解釋的聲學代理值，不冒充人工觀察。
+ let techniqueScore=null,techniqueMetric='';
+ if(all.length>=20){
+  const clarities=valid.map(f=>f.clarity).filter(Number.isFinite),medianClarity=median(clarities);
+  const rmsVals=all.map(f=>f.rms).filter(Number.isFinite),rmsMed=median(rmsVals),rmsSpread=Math.max(0,percentile(rmsVals,.85)-percentile(rmsVals,.15));
+  const phraseStarts=extractVoicePhraseOnsets(all),phraseIntervals=phraseStarts.slice(1).map((t,i)=>t-phraseStarts[i]);
+  const longBreaks=phraseIntervals.filter(x=>x>4500).length,veryShort=phraseIntervals.filter(x=>x<550).length;
+  if(item==='vocal'){
+   const clarityScore=clamp(62+medianClarity*38),breathScore=clamp(94-longBreaks*5-veryShort*2-rmsSpread*180);
+   techniqueScore=clamp(clarityScore*.58+breathScore*.42);techniqueMetric='換氣與發音清晰度（聲學參考）';
+  }else if(item==='recorder'){
+   const articulation=clamp(65+medianClarity*30-Math.max(0,audioOnsets.length-elapsed*5)*.5),breath=clamp(92-longBreaks*5-rmsSpread*150);
+   techniqueScore=clamp(articulation*.62+breath*.38);techniqueMetric='運舌、氣流與換氣穩定度';
+  }else if(item==='percussion'){
+   const strengths=audioOnsets.map((_,i)=>all[Math.min(all.length-1,Math.floor(i*all.length/Math.max(1,audioOnsets.length)))]?.rms||rmsMed),spread=strengths.length?percentile(strengths,.85)-percentile(strengths,.15):rmsSpread;
+   techniqueScore=clamp(92-spread*220);techniqueMetric='力度一致與拍點控制';
+  }else{
+   techniqueScore=clamp(68+medianClarity*24-rmsSpread*80);techniqueMetric=item==='keyboard'?'流暢度與力度穩定':'技巧與音色穩定度';
+  }
+  if(scoringProfile?.value==='classroom')techniqueScore=clamp(78+(techniqueScore-50)*.44);
+ }
+
+ updateDurationBadge();
+ const durationModeValue=durationMode?.value||'auto',target=+targetAssessSeconds.value||0,voiceCoverage=valid.length/Math.max(1,all.length);
+ let complete=null;
+ if(durationModeValue==='manual'&&target>0){
+  const durationProgress=clamp(elapsed/target,0,1),coverageAdequacy=clamp(voiceCoverage/Math.max(.18,cfg.coverageTarget)*100);
+  complete=clamp(durationProgress*82+coverageAdequacy*.18);
+ }else if(durationModeValue==='auto'&&elapsed>=Math.min(8,(+minAssessSeconds.value||10))){
+  // 自動模式只能估計本次演唱的連續性，不能宣稱知道原曲是否唱完。
+  const coverageAdequacy=clamp(voiceCoverage/Math.max(.16,cfg.coverageTarget)*100),continuity=clamp(100-Math.max(0,phraseOnsets.length-elapsed/1.2)*1.2);
+  complete=clamp(coverageAdequacy*.65+continuity*.35);
+ }
+ const frameConfidence=clamp(valid.length/90*100),coverageConfidence=clamp(voiceCoverage/.24*100),confidence=clamp(frameConfidence*.55+coverageConfidence*.45);
+ const weights={...cfg.weights};if(item==='percussion'){weights.pitch=0;weights.rhythm=.55;weights.technique=.30;weights.complete=.15}else if(item==='recorder'){weights.pitch=.34;weights.rhythm=.28;weights.technique=.23;weights.complete=.15}else if(item==='keyboard'){weights.pitch=.32;weights.rhythm=.30;weights.technique=.23;weights.complete=.15}
+ const weighted=[];if(pitchScore!==null&&weights.pitch)weighted.push([pitchScore,weights.pitch]);if(rhythmScore!==null)weighted.push([rhythmScore,weights.rhythm]);if(techniqueScore!==null)weighted.push([techniqueScore,weights.technique]);if(complete!==null)weighted.push([complete,weights.complete]);
+ const weightSum=weighted.reduce((a,x)=>a+x[1],0),total=weightSum?weighted.reduce((a,x)=>a+x[0]*x[1],0)/weightSum:null;
+ const scores={pitchScore,rhythmScore,techniqueScore,complete,total,elapsed,voiceCoverage,validFrames:valid.length,onsets:audioOnsets.length,confidence,pitchMetric,rhythmMetric,techniqueMetric,item,durationMode:durationModeValue};
+ aiPitchScore.textContent=pitchScore===null?'—':pitchScore.toFixed(0);aiRhythmScore.textContent=rhythmScore===null?'—':rhythmScore.toFixed(0);aiTechniqueScore.textContent=techniqueScore===null?'—':techniqueScore.toFixed(0);aiCompletenessScore.textContent=complete===null?'—':complete.toFixed(0);aiAudioTotal.textContent=total===null?'—':total.toFixed(0);
+ pitchScoreHint.textContent=pitchMetric||'有效聲音不足';rhythmScoreHint.textContent=rhythmMetric;techniqueScoreHint.textContent=techniqueMetric||'資料不足';
+ completeScoreHint.textContent=durationModeValue==='manual'?(target>0?`手動 ${Math.floor(target/60)}:${String(target%60).padStart(2,'0')}｜已評量 ${elapsed.toFixed(0)} 秒`:'請輸入手動時間'):durationModeValue==='off'?'本次不評完整度':'自動估算演唱連續性（非原曲長度判定）';
+ totalScoreHint.textContent=total===null?'資料不足，請老師判讀':`${scoreBand(total)}｜${cfg.label}｜僅供教師參考`;
  if(total!==null){ai.value=total.toFixed(0);if(typeof calc==='function')calc()}
- aiConfidenceBadge.textContent=`AI 信心 ${confidence.toFixed(0)}%`;
- aiConfidenceBadge.className='level '+(confidence>=80?'good':confidence>=55?'warn':'danger');
+ aiConfidenceBadge.textContent=`AI 信心 ${confidence.toFixed(0)}%`;aiConfidenceBadge.className='level '+(confidence>=80?'good':confidence>=55?'warn':'danger');
  if(window.aiTeacherFeedback){aiTeacherFeedback.textContent=generateTeacherFeedback(scores);aiTeacherFeedback.style.whiteSpace='pre-line'}
  return scores
 }
@@ -2025,7 +2107,7 @@ window.stopAudioAssessment=()=>{
  audioAssessStream?.getTracks().forEach(t=>t.stop());audioAssessStream=null;
  try{audioAssessCtx?.close()}catch(e){} audioAssessCtx=null;audioAnalyser=null;
  const scores=calculateAudioScores();micPermissionState.textContent=`已停止｜評量 ${scores.elapsed.toFixed(1)} 秒｜有效人聲 ${(scores.voiceCoverage*100).toFixed(0)}%`;
- S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.0',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
+ S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.1.0',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
  save()
 };
 

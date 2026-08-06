@@ -1,19 +1,14 @@
-# FairSing AI v3.1 Firebase 正式發布版
+# FairSing AI 5.1 Professional
 
-此版本以 Firebase 專案 `fairsing-ai` 為正式發布目標。
+手機／平板優先的 AI 音樂評量平台。
 
-## 主要檔案
+## 5.1 重點
+- 一般班級考試、音樂班術科、歌唱比賽三套評分標準。
+- 歌唱、中音直笛、節奏打擊、鍵盤與其他樂器採不同評量邏輯。
+- 歌曲長度支援自動判斷、手動分秒輸入與不評完整度。
+- 歌唱加入換氣與發音清晰度參考。
+- 直笛加入運舌、氣流與換氣參考。
+- 節奏打擊不評音準。
+- AI 評語與信心值僅供教師參考，教師保有最後決定權。
 
-- `public/index.html`：正式網站
-- `firebase.json`：Hosting 與 Firestore 設定
-- `.firebaserc`：Firebase 專案 ID
-- `firestore.rules`：教師個人資料安全規則
-- `FIREBASE_DEPLOY.md`：部署與正式測試步驟
-
-## 資料同步
-
-登入教師的資料儲存在：
-
-`teachers/{uid}/app/state`
-
-訪客資料只存於目前裝置，不會上傳 Firestore。
+部署方式請參閱 `FIREBASE_DEPLOY.md`。
