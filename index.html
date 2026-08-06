@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI v3.0 正式版｜音樂教師智慧教學平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairSing AI v3.4 穩定修正版｜音樂教師智慧教學平台</title><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>
 :root{--b:#173c67;--a:#65d1c9;--p:#ff88a4;--bg:#f3f8fc;--line:#dce7ef}*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC",sans-serif;background:var(--bg);color:#24364b}button,input,select,textarea{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#eefaff,#fff4f7)}.box,.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 32px #173c6712}.box{width:min(520px,100%);padding:30px;text-align:center}.logo{width:130px;height:130px;border-radius:50%;margin:auto;display:grid;place-items:center;font-size:68px;background:radial-gradient(circle at 35% 25%,#fff,#d7fbff 28%,#68d3cc 65%,#347fa8)}.btn{border:0;border-radius:13px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,#4d8fd8,#7882e6);color:#fff}.ghost{background:#fff;border:1px solid var(--line)}.danger{background:#e65d70;color:#fff}.top{background:linear-gradient(120deg,var(--b),#2e719f);color:#fff;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:22px;font-weight:950}.shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px)}nav{background:#fff;border-right:1px solid var(--line);padding:14px}.nav{width:100%;text-align:left;border:0;background:transparent;padding:12px;border-radius:13px;font-weight:750}.nav.active,.nav:hover{background:#e9f7f7}main{padding:18px}.page{display:none}.page.active{display:block}.hero{background:linear-gradient(135deg,#173c67,#2e72a2 60%,#49a9b9);color:#fff;border-radius:28px;padding:26px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{padding:16px}.s4{grid-column:span 4}.s6{grid-column:span 6}.s8{grid-column:span 8}.s12{grid-column:span 12}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}label{display:block;font-size:13px;color:#6f8095;margin:9px 0 5px}input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px}textarea{min-height:80px}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.muted{color:#718096}.kpi{font-size:36px;font-weight:950}.seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}.seat{padding:10px;border:1px solid var(--line);border-radius:13px;background:#fff}.seat.active{background:var(--a)}.seat.done{outline:3px solid #37b978}.modal{position:fixed;inset:0;background:#10233eaa;display:none;place-items:center;padding:15px}.modal.open{display:grid}.dialog{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:18px}@media(max-width:850px){.shell{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{min-width:max-content}.s4,.s6,.s8{grid-column:span 12}}
 
 .export-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fbfd}.export-panel label{margin-top:0}.export-note{font-size:13px;color:#66798f}.export-checks{display:flex;gap:14px;flex-wrap:wrap;margin:9px 0}.export-checks label{display:flex;gap:6px;align-items:center;margin:0;color:#33465b}.export-checks input{width:auto}.excel-ok{color:#2b9d68;font-weight:800}.excel-bad{color:#d95769;font-weight:800}@media(max-width:720px){.export-panel{grid-template-columns:1fr}}
@@ -173,8 +173,8 @@
 
 </style><link rel="manifest" href="manifest.webmanifest">
 </head><body>
-<div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.3</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
-<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.3</span><div class="brand">🎼 FairSing AI v3.3 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
+<div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
+<div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
 <button class="nav" data-p="schedule">📅 課表／日曆</button>
 <button class="nav" data-p="classes">👨‍🎓 班級學生</button>
@@ -824,32 +824,18 @@
 </main></div></div>
 <div id="modal" class="modal"><div class="dialog"><div class="row between"><h3 id="mt"></h3><button class="btn ghost" onclick="closeModal()">關閉</button></div><div id="mb"></div></div></div>
 <script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
-const cfg={apiKey:'AIzaSyAZy_Xf-WBo3JPYMJRbBlyWePw5lhduA2w',authDomain:'fairsing-ai.firebaseapp.com',projectId:'fairsing-ai',storageBucket:'fairsing-ai.firebasestorage.app',messagingSenderId:'1018348024170',appId:'1:1018348024170:web:cbce3697ce8438d7d13513'};const fapp=initializeApp(cfg),auth=getAuth(fapp),db=getFirestore(fapp),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
+import{initializeApp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+const cfg={apiKey:'AIzaSyAZy_Xf-WBo3JPYMJRbBlyWePw5lhduA2w',authDomain:'fairsing-ai.firebaseapp.com',projectId:'fairsing-ai',storageBucket:'fairsing-ai.firebasestorage.app',messagingSenderId:'1018348024170',appId:'1:1018348024170:web:cbce3697ce8438d7d13513'};const fapp=initializeApp(cfg),auth=getAuth(fapp),db=getFirestore(fapp),provider=new GoogleAuthProvider();
 const D={classes:[],templates:[{id:'v',name:'伴奏歌唱',type:'vocal',ai:['音準','節奏','穩定度'],teacher:['音色','情感','台風']},{id:'a',name:'清唱',type:'acapella',ai:['音準','節奏','穩定度','音域'],teacher:['咬字','情感','自信']},{id:'f',name:'自由演唱',type:'free',ai:['音準','穩定度','音域'],teacher:['音樂性','表現力','創意']},{id:'r',name:'直笛獨奏',type:'recorder',ai:['音準','節奏','音符正確率','音長'],teacher:['音色','運舌','換氣']},{id:'p',name:'節奏打擊',type:'percussion',ai:['拍點準確度','節奏正確率','速度穩定度','漏拍與多拍'],teacher:['姿勢','協調性','力度控制','完整度']},{id:'ci',name:'自訂樂器',type:'customInstrument',instrument:'其他',useMetronome:true,needBacking:false,useScoreReference:false,ai:['音準','節奏','穩定度'],teacher:['音色','技巧','完整度']}],orders:{},records:[],session:null,draft:null,settings:{sw:80,tw:20},metronome:{bpm:80,beats:4,countIn:1,continue:true},
 curriculumMeta:{courseName:'音樂',publisher:'康軒',semester:'115學年度上學期'},
-curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.3.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
+curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.4.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
 
 function ensurePhase2(){
  S.questionBank=S.questionBank||[];S.scoreImports=S.scoreImports||[];S.materials=S.materials||[];S.schedule=S.schedule||[];S.calendarEvents=S.calendarEvents||[];S.phase2=S.phase2||{currentRhythm:null,currentSight:null};
 }
 
 const norm=x=>({...structuredClone(D),...x,settings:{...D.settings,...(x?.settings||{})}}),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-window.googleLogin=async()=>{
- try{
-  await signInWithPopup(auth,provider);
- }catch(e){
-  console.error('Google login failed',e);
-  const code=e?.code||'';
-  let msg='Google 登入失敗。';
-  if(code==='auth/popup-blocked')msg='瀏覽器封鎖了登入視窗。請允許此網站的彈出式視窗後再試一次。';
-  else if(code==='auth/popup-closed-by-user')msg='登入視窗已關閉，尚未完成登入。';
-  else if(code==='auth/unauthorized-domain')msg='目前網站網域尚未加入 Firebase 授權網域。';
-  else if(code==='auth/network-request-failed')msg='網路連線失敗，請確認網路後再試一次。';
-  else if(e?.message)msg+='\n\n'+e.message;
-  alert(msg);
- }
-};window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
+window.googleLogin=async()=>{try{/Android|iPhone|iPad/i.test(navigator.userAgent)?await signInWithRedirect(auth,provider):await signInWithPopup(auth,provider)}catch(e){alert(e.message)}};window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
 function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
@@ -1721,10 +1707,10 @@ window.saveClassroomNotes=()=>{ensureClassroomMode();S.classroomMode.notes=cmTea
 
 
 let calibrationStep=1,calibrationStream=null,calibrationCtx=null,calibrationAnalyser=null;
-let calibrationData={mic:false,noiseRms:0,noiseLevel:'',referenceHz:0,referenceCents:0,sensitivity:1};
+let calibrationData={mic:false,noiseDone:false,noiseRms:0,noiseLevel:'',referenceDone:false,referenceHz:0,referenceCents:0,sensitivity:1};
 
 window.openAudioCalibration=()=>{
- calibrationData={mic:false,noiseRms:0,noiseLevel:'',referenceHz:0,referenceCents:0,sensitivity:1};
+ calibrationData={mic:false,noiseDone:false,noiseRms:0,noiseLevel:'',referenceDone:false,referenceHz:0,referenceCents:0,sensitivity:1};
  audioCalibrationModal.classList.add('open');showCalibrationStep(1)
 };
 window.closeAudioCalibration=()=>{
@@ -1741,8 +1727,8 @@ function showCalibrationStep(n){
 }
 window.calibrationNext=()=>{
  if(calibrationStep===1&&!calibrationData.mic)return alert('請先完成麥克風權限測試');
- if(calibrationStep===2&&!calibrationData.noiseRms)return alert('請先完成環境噪音測試');
- if(calibrationStep===3&&!calibrationData.referenceHz)return alert('請先完成參考音測試');
+ if(calibrationStep===2&&!calibrationData.noiseDone)return alert('請先完成環境噪音測試');
+ if(calibrationStep===3&&!calibrationData.referenceDone)return alert('請先完成參考音測試');
  showCalibrationStep(calibrationStep+1);
  if(calibrationStep===4)renderCalibrationSummary()
 };
@@ -1752,14 +1738,18 @@ window.requestCalibrationMic=async()=>{
  try{
   calibrationStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   calibrationCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(calibrationCtx.state==='suspended')await calibrationCtx.resume();
   const source=calibrationCtx.createMediaStreamSource(calibrationStream);
   calibrationAnalyser=calibrationCtx.createAnalyser();calibrationAnalyser.fftSize=2048;source.connect(calibrationAnalyser);
   calibrationData.mic=true;calMicResult.innerHTML='✓ 麥克風已啟用，可進行下一步。'
  }catch(e){calMicResult.innerHTML='✗ 無法啟用麥克風：'+esc(e.message)}
 };
 
-window.measureBackgroundNoise=async()=>{
+window.measureBackgroundNoise=async(btn)=>{
  if(!calibrationAnalyser)return alert('請先啟用麥克風');
+ if(calibrationCtx?.state==='suspended')await calibrationCtx.resume();
+ calibrationData.noiseDone=false;
+ if(btn){btn.disabled=true;btn.textContent='測量中…'}
  calNoiseResult.textContent='測量中，請保持教室平常的安靜狀態……';
  let samples=[],start=performance.now();
  await new Promise(resolve=>{
@@ -1771,16 +1761,22 @@ window.measureBackgroundNoise=async()=>{
   };loop()
  });
  const avg=samples.reduce((a,b)=>a+b,0)/Math.max(1,samples.length);
- calibrationData.noiseRms=avg;calibrationData.noiseLevel=avg<0.015?'安靜':avg<0.035?'可接受':'偏吵';
- calNoiseResult.innerHTML=`背景噪音 RMS：<b>${avg.toFixed(4)}</b>｜環境：<b>${calibrationData.noiseLevel}</b>`;
+ calibrationData.noiseRms=Number.isFinite(avg)?avg:0;calibrationData.noiseLevel=avg<0.015?'安靜':avg<0.035?'可接受':'偏吵';
+ calibrationData.noiseDone=true;
+ calNoiseResult.innerHTML=`✓ 測試完成｜背景噪音 RMS：<b>${calibrationData.noiseRms.toFixed(4)}</b>｜環境：<b>${calibrationData.noiseLevel}</b>`;
+ calNoiseBar.style.width=Math.min(100,Math.max(2,calibrationData.noiseRms*1200))+'%';
+ if(btn){btn.disabled=false;btn.textContent='重新測試 5 秒'}
 };
 
 window.playCalibrationTone=()=>{
  const ctx=musicAudioContext(),start=ctx.currentTime+.1;scheduleTone(ctx,start,440,2,'sine',.16)
 };
 
-window.startReferencePitchTest=async()=>{
+window.startReferencePitchTest=async(btn)=>{
  if(!calibrationAnalyser)return alert('請先啟用麥克風');
+ if(calibrationCtx?.state==='suspended')await calibrationCtx.resume();
+ calibrationData.referenceDone=false;
+ if(btn){btn.disabled=true;btn.textContent='偵測中…'}
  calPitchResult.textContent='請持續唱 A4 約 3 秒……';
  const freqs=[],rmsVals=[],start=performance.now();
  await new Promise(resolve=>{
@@ -1791,11 +1787,12 @@ window.startReferencePitchTest=async()=>{
    if(performance.now()-start<3000)requestAnimationFrame(loop);else resolve()
   };loop()
  });
- if(!freqs.length){calPitchResult.textContent='未偵測到穩定音高，請靠近麥克風再試一次。';return}
+ if(!freqs.length){calPitchResult.textContent='未偵測到穩定音高，請靠近麥克風再試一次。';if(btn){btn.disabled=false;btn.textContent='重新唱音測試'}return}
  freqs.sort((a,b)=>a-b);const hz=freqs[Math.floor(freqs.length/2)],cents=1200*Math.log2(hz/440);
  const sensitivity=Math.max(.5,Math.min(2,(rmsVals.reduce((a,b)=>a+b,0)/rmsVals.length)/.08));
- calibrationData.referenceHz=hz;calibrationData.referenceCents=cents;calibrationData.sensitivity=sensitivity;
- calPitchResult.innerHTML=`偵測音高：<b>${hz.toFixed(1)} Hz</b>｜偏差：<b>${cents>=0?'+':''}${cents.toFixed(1)} cents</b>｜靈敏度：<b>${sensitivity.toFixed(2)}</b>`
+ calibrationData.referenceHz=hz;calibrationData.referenceCents=cents;calibrationData.sensitivity=sensitivity;calibrationData.referenceDone=true;
+ calPitchResult.innerHTML=`✓ 測試完成｜偵測音高：<b>${hz.toFixed(1)} Hz</b>｜偏差：<b>${cents>=0?'+':''}${cents.toFixed(1)} cents</b>｜靈敏度：<b>${sensitivity.toFixed(2)}</b>`;
+ if(btn){btn.disabled=false;btn.textContent='重新唱音測試'}
 };
 
 function renderCalibrationSummary(){
@@ -2476,7 +2473,7 @@ setTimeout(excelReady,300);
   <div id="calPane2" class="cal-pane hidden">
    <h3>環境噪音測試</h3>
    <p>請全班保持平常上課的安靜程度，系統會測量 5 秒背景噪音。</p>
-   <button class="btn primary" onclick="measureBackgroundNoise()">開始 5 秒測試</button>
+   <button class="btn primary" onclick="measureBackgroundNoise(this)">開始 5 秒測試</button>
    <div class="cal-meter"><i id="calNoiseBar"></i></div>
    <div id="calNoiseResult" class="notice">尚未測試</div>
   </div>
@@ -2486,7 +2483,7 @@ setTimeout(excelReady,300);
    <p>先播放 A4 參考音，再請學生或老師唱同一個音約 3 秒。</p>
    <div class="row">
     <button class="btn secondary" onclick="playCalibrationTone()">▶ 播放 A4</button>
-    <button class="btn primary" onclick="startReferencePitchTest()">開始唱音測試</button>
+    <button class="btn primary" onclick="startReferencePitchTest(this)">開始唱音測試</button>
    </div>
    <div id="calPitchResult" class="notice" style="margin-top:12px">尚未測試</div>
   </div>

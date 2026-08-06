@@ -1,5 +1,19 @@
-# FairSing AI v3.3 登入修正版
+# FairSing AI v3.1 Firebase 正式發布版
 
-本版修正 Samsung Internet／Chrome 行動裝置的 Google 登入流程，避免 `redirect_uri_mismatch`。
+此版本以 Firebase 專案 `fairsing-ai` 為正式發布目標。
 
-上傳時請將本資料夾內檔案直接覆蓋 GitHub 儲存庫最外層同名檔案；保留原有 `.github/workflows` 資料夾。
+## 主要檔案
+
+- `public/index.html`：正式網站
+- `firebase.json`：Hosting 與 Firestore 設定
+- `.firebaserc`：Firebase 專案 ID
+- `firestore.rules`：教師個人資料安全規則
+- `FIREBASE_DEPLOY.md`：部署與正式測試步驟
+
+## 資料同步
+
+登入教師的資料儲存在：
+
+`teachers/{uid}/app/state`
+
+訪客資料只存於目前裝置，不會上傳 Firestore。

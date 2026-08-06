@@ -1,6 +1,14 @@
-# FairSing AI v3.3 登入修正版
+# FairSing AI v3.4 穩定修正版
 
-- 移除行動裝置強制 `signInWithRedirect()`，避免 Google 400 `redirect_uri_mismatch`。
-- 所有支援瀏覽器改用使用者點擊後的 Firebase `signInWithPopup()`。
-- 新增彈出視窗被封鎖、使用者關閉視窗、網域未授權與網路失敗的繁體中文提示。
-- 保留既有 Firebase 專案設定與其他功能。
+## 本次修正
+
+- 修正環境噪音 RMS 為 `0.0000` 時，系統誤判為「尚未完成測試」的問題。
+- 新增獨立的環境噪音測試完成狀態，不再用數值真假判斷。
+- 新增獨立的參考音測試完成狀態。
+- 測試期間按鈕會暫時停用，完成後顯示「重新測試」。
+- 強化手機與平板上 AudioContext 暫停後的恢復處理。
+- 保留既有 Google 登入、班級、評量、報表與 Firebase 部署設定。
+
+## 更新方式
+
+將壓縮檔內 `FairSing-AI-main` 資料夾中的檔案直接上傳到 GitHub 專案最外層，覆蓋同名檔案。保留原本 `.github` 工作流程資料夾。
