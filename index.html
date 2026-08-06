@@ -278,6 +278,25 @@
 
  <canvas id="pitchTraceCanvas" width="900" height="220"></canvas>
 
+ <div class="card" id="manualAssessmentModeCard" style="margin-top:12px;background:#f4fbff;border:2px solid #8fc9df">
+  <div class="row between" style="gap:10px;flex-wrap:wrap">
+   <div><h3 style="margin:0">🎯 評量項目與評分標準</h3><div class="muted">由老師手動選擇，系統不會自行更換評分標準。</div></div>
+   <span id="activeScoringProfileBadge" class="level good">一般班級</span>
+  </div>
+  <div class="grid" style="margin-top:10px;align-items:end">
+   <div class="s4"><label>評量項目</label><select id="assessmentItem" onchange="applyAssessmentPreset()"><option value="auto" selected>依評量模板判斷</option><option value="vocal">歌唱</option><option value="recorder">中音直笛</option><option value="percussion">節奏打擊</option><option value="keyboard">鍵盤／鋼琴</option><option value="customInstrument">其他樂器</option></select></div>
+   <div class="s4"><label>評分標準（老師選擇）</label><select id="scoringProfile" onchange="setScoringProfile(this.value)"><option value="classroom" selected>一般班級考試</option><option value="music">音樂班術科</option><option value="competition">歌唱比賽</option></select></div>
+   <div class="s4"><label>評分強度</label><select id="scoringStrictness" onchange="refreshScoringProfileUI();calculateAudioScores()"><option value="gentle">較寬鬆</option><option value="standard" selected>標準</option><option value="strict">較嚴格</option></select></div>
+   <div class="s12">
+    <div class="row" style="flex-wrap:wrap;gap:8px">
+     <button type="button" id="profileBtnClassroom" class="btn primary" onclick="setScoringProfile('classroom')">🏫 一般班級</button>
+     <button type="button" id="profileBtnMusic" class="btn ghost" onclick="setScoringProfile('music')">🎼 音樂班</button>
+     <button type="button" id="profileBtnCompetition" class="btn ghost" onclick="setScoringProfile('competition')">🏆 歌唱比賽</button>
+    </div>
+   </div>
+  </div>
+ </div>
+
  <div class="card" style="margin-top:12px;background:#fffaf0;border:2px solid #f0d99a">
   <div class="row between"><div><h3 style="margin:0">⏱️ 樂曲總長／評量時間</h3><div class="muted">可自動估算，也可由老師手動輸入；手動設定具有最高優先權。</div></div><span id="durationSetBadge" class="level warn">自動判斷</span></div>
   <div class="grid" style="margin-top:10px;align-items:end">
@@ -305,9 +324,6 @@
    <div class="s4"><label>BPM</label><input id="audioAssessBpm" type="number" min="40" max="200" value="80"></div>
    <div class="s4"><label>允許音準誤差</label><select id="pitchTolerance"><option value="35">±35 cents</option><option value="50" selected>±50 cents</option><option value="75">±75 cents</option></select></div>
    <div class="s4"><label>最短評量秒數</label><input id="minAssessSeconds" type="number" min="3" max="300" value="10"></div>
-   <div class="s4"><label>評分標準</label><select id="scoringProfile" onchange="applyAssessmentPreset()"><option value="classroom" selected>一般班級考試（公平、鼓勵但不送分）</option><option value="music">音樂班術科（專業、較嚴謹）</option><option value="competition">歌唱比賽（技巧、音色、情感與舞台）</option></select></div>
-   <div class="s4"><label>評分強度</label><select id="scoringStrictness" onchange="calculateAudioScores()"><option value="gentle">較寬鬆</option><option value="standard" selected>標準</option><option value="strict">較嚴格</option></select></div>
-   <div class="s4"><label>評量項目</label><select id="assessmentItem" onchange="applyAssessmentPreset()"><option value="auto" selected>依評量模板自動判斷</option><option value="vocal">歌唱</option><option value="recorder">中音直笛</option><option value="percussion">節奏打擊</option><option value="keyboard">鍵盤／鋼琴</option><option value="customInstrument">其他樂器</option></select></div>
    <div class="s4"><label>人聲／收音門檻</label><select id="voiceGate"><option value="low">較寬鬆</option><option value="normal" selected>一般</option><option value="high">較嚴格</option></select></div>
    <div class="s12"><label>歌詞參考（選填，歌唱咬字評語使用）</label><textarea id="lyricsReference" rows="2" placeholder="可貼上本次演唱歌詞；未填時只評估發音清晰度，不判斷歌詞正確與否。"></textarea></div>
   </div>
@@ -1921,7 +1937,24 @@ function currentAssessmentItem(){
  if(type==='keyboard')return 'keyboard';
  return 'vocal';
 }
+window.refreshScoringProfileUI=()=>{
+ const profile=document.getElementById('scoringProfile')?.value||'classroom';
+ const strict=document.getElementById('scoringStrictness')?.value||'standard';
+ const names={classroom:'一般班級',music:'音樂班',competition:'歌唱比賽'};
+ const strictNames={gentle:'較寬鬆',standard:'標準',strict:'較嚴格'};
+ const badge=document.getElementById('activeScoringProfileBadge');
+ if(badge){badge.textContent=`${names[profile]||'一般班級'}／${strictNames[strict]||'標準'}`;badge.className='level '+(profile==='competition'?'warn':profile==='music'?'':'good')}
+ const btnMap={classroom:'profileBtnClassroom',music:'profileBtnMusic',competition:'profileBtnCompetition'};
+ Object.entries(btnMap).forEach(([key,id])=>{const b=document.getElementById(id);if(b)b.className='btn '+(key===profile?'primary':'ghost')});
+};
+window.setScoringProfile=profile=>{
+ const el=document.getElementById('scoringProfile');
+ if(el)el.value=['classroom','music','competition'].includes(profile)?profile:'classroom';
+ try{localStorage.setItem('fairsingScoringProfile',el?.value||'classroom')}catch(e){}
+ refreshScoringProfileUI();applyAssessmentPreset();calculateAudioScores();
+};
 window.applyAssessmentPreset=()=>{
+ refreshScoringProfileUI();
  const item=currentAssessmentItem(),profile=scoringProfile?.value||'classroom';
  const labels={vocal:['AI 音準參考','節奏表現參考','換氣／咬字參考'],recorder:['音準參考','節奏參考','運舌／換氣參考'],percussion:['— 不評音準','節奏正確／穩定','力度／拍點控制'],keyboard:['音高正確參考','節奏參考','流暢／力度參考'],customInstrument:['音準／音高參考','節奏參考','技巧／音色參考']};
  const a=labels[item]||labels.vocal;
@@ -1991,22 +2024,40 @@ function scoreBand(score){
  return '建議由老師再確認';
 }
 function generateTeacherFeedback(scores){
- const strengths=[],tips=[],item=scores.item||currentAssessmentItem(),profile=scoringConfig().label;
- const label={vocal:'歌唱',recorder:'中音直笛',percussion:'節奏打擊',keyboard:'鍵盤',customInstrument:'樂器'}[item]||'演奏';
- if(scores.pitchScore!==null){if(scores.pitchScore>=88)strengths.push(item==='recorder'?'音高與長音控制穩定':'音高表現穩定');else if(scores.pitchScore>=75)strengths.push('大部分音高維持在合理範圍');else tips.push(item==='recorder'?'可用長音逐音確認氣流與音準':'可先降速、分句確認旋律')}
- if(item==='percussion')strengths.push('本模式不以音準作為評分項目');
- if(scores.rhythmScore!==null){if(scores.rhythmScore>=88)strengths.push('拍點與速度維持良好');else if(scores.rhythmScore>=75)strengths.push('整體節奏大致穩定');else tips.push('可先降低 BPM，搭配節拍器分段練習')}
- if(scores.techniqueScore!==null){
-  if(scores.techniqueScore>=88)strengths.push(item==='vocal'?'換氣自然、發音清楚':item==='recorder'?'運舌與換氣流暢':item==='percussion'?'力度與拍點控制穩定':'技巧與流暢度良好');
-  else tips.push(item==='vocal'?'換氣後起音與子音清晰度可再加強':item==='recorder'?'運舌要輕、換氣位置可先標在譜上':item==='percussion'?'注意每一下力度一致，避免越打越快':'可放慢速度練習動作銜接');
- }
- if(scores.complete!==null){if(scores.complete>=88)strengths.push('完成度良好');else tips.push('部分區段停頓較久，請確認是否漏唱、漏奏或收音距離不穩')}
- if(item==='vocal'&&!(lyricsReference?.value||'').trim())tips.push('未提供歌詞，本次咬字只評估聲音清晰度，不判定歌詞是否正確');
- const conf=scores.confidence>=80?'AI 信心良好':scores.confidence>=55?'AI 信心普通，請老師一起判讀':'收音資料不足，不建議直接採用 AI 分數';
- return `評量：${label}｜標準：${profile}
-優點：${strengths.length?strengths.join('；'):'已完成本次評量'}。
-建議：${tips.length?tips.join('；'):'維持目前方式繼續練習'}。
-${conf}。`;
+ const item=scores.item||currentAssessmentItem(),cfg=scoringConfig();
+ const itemName={vocal:'歌唱',recorder:'中音直笛',percussion:'節奏打擊',keyboard:'鍵盤',customInstrument:'其他樂器'}[item]||'音樂表現';
+ const profileName=(document.getElementById('scoringProfile')?.value==='music'?'音樂班':document.getElementById('scoringProfile')?.value==='competition'?'歌唱比賽':'一般班級');
+ const fmt=v=>v===null||!Number.isFinite(v)?'未列入':`${Math.round(v)} 分`;
+ const band=v=>v===null||!Number.isFinite(v)?'none':v>=92?'excellent':v>=84?'good':v>=75?'steady':v>=65?'developing':'support';
+ const phrases={
+  pitch:{
+   vocal:{excellent:'旋律線條穩定，長音控制也相當完整',good:'大部分音高掌握良好，少數轉音仍有調整空間',steady:'主要旋律大致清楚，音程跳進時可再確認',developing:'部分樂句音高容易飄動，建議先分句慢唱',support:'目前音高穩定度不足，建議先用鋼琴或示範音逐句練習'},
+   recorder:{excellent:'音高與長音氣流穩定',good:'多數音高清楚，跨音區時可再穩定氣流',steady:'基本音高可辨識，指法切換處偶有偏移',developing:'部分音高受氣流或指法影響，建議逐音長吹',support:'音高辨識較不穩定，先確認指法與吹氣方向'},
+   keyboard:{excellent:'音高位置與演奏穩定度良好',good:'多數音高正確，跳進位置可再熟練',steady:'主要音型可辨識，部分音高銜接需確認',developing:'音高錯置較多，建議分手慢速練習',support:'目前音高資料不足或錯音較多，先縮短樂句練習'},
+   customInstrument:{excellent:'音高與音色控制穩定',good:'主要音高表現良好',steady:'音高大致維持在合理範圍',developing:'部分音高需要再確認',support:'建議先以慢速逐音校正'}
+  },
+  rhythm:{
+   excellent:'速度與拍點維持穩定，樂句推進自然',good:'整體節奏清楚，少數起音略有提前或延後',steady:'基本速度能維持，換句或較密集節奏可再穩定',developing:'節奏有忽快忽慢的情形，建議降低 BPM 分段練習',support:'拍點目前較不穩定，先以節拍器練習基本脈動'},
+  technique:{
+   vocal:{excellent:'聲學分析顯示起音清楚、換氣銜接自然',good:'換氣與發音整體清楚，句尾可再收得完整',steady:'大部分字音可辨識，換氣後的起音可更明確',developing:'部分樂句因換氣或發音使線條中斷，建議先標記換氣點',support:'本次發音清晰度與氣息連續性不足，建議縮短樂句練習'},
+   recorder:{excellent:'運舌、氣流與換氣銜接流暢',good:'運舌大致清楚，換氣位置合理',steady:'基本吹奏順暢，連續音與吐音可再區分',developing:'運舌或換氣造成部分中斷，建議慢速分句',support:'氣流與運舌穩定度不足，先用單音吐奏練習'},
+   percussion:{excellent:'力度一致，拍點控制清楚',good:'大部分擊點整齊，強弱變化可再明確',steady:'基本拍點可維持，連續節奏的力度略有差異',developing:'擊點與力度不夠一致，建議先以較慢速度固定手勢',support:'目前拍點與力度差異較大，先練習單一節奏型'},
+   keyboard:{excellent:'演奏銜接流暢，力度控制穩定',good:'整體流暢，部分換位可再提早準備',steady:'主要段落可連續演奏，轉換處略有停頓',developing:'換位與銜接較不穩定，建議分段慢練',support:'演奏連續性不足，先分手或縮短樂句練習'},
+   customInstrument:{excellent:'技巧與音色穩定',good:'演奏技巧整體良好',steady:'基本技巧可維持',developing:'動作銜接仍可加強',support:'建議先降低速度練習基本技巧'}
+  },
+  complete:{excellent:'評量過程連續，完成度良好',good:'大部分內容有完成，少數停頓不影響整體',steady:'主要段落已完成，但仍有幾處較長停頓',developing:'演奏或演唱中斷較多，請確認是否漏段',support:'有效收音或完成時間不足，建議重新確認'}
+ };
+ const pitchText=item==='percussion'?'本項目不評音準':(phrases.pitch[item]||phrases.pitch.customInstrument)[band(scores.pitchScore)];
+ const rhythmText=scores.rhythmScore===null?'節奏資料不足，本次不以推測分數代替老師判斷':phrases.rhythm[band(scores.rhythmScore)];
+ const techniqueText=(phrases.technique[item]||phrases.technique.customInstrument)[band(scores.techniqueScore)];
+ const completeText=scores.complete===null?'本次未設定可用的完整度依據':phrases.complete[band(scores.complete)];
+ const all=[['音準',scores.pitchScore],['節奏',scores.rhythmScore],['技巧',scores.techniqueScore],['完整度',scores.complete]].filter(x=>Number.isFinite(x[1]));
+ all.sort((a,b)=>b[1]-a[1]);
+ const strongest=all[0],focus=all[all.length-1];
+ const summary=strongest&&focus&&strongest[0]!==focus[0]?`本次較穩定的是「${strongest[0]}」，較需要練習的是「${focus[0]}」。`:'本次各項資料接近，建議由老師配合現場表現綜合判讀。';
+ const confidence=scores.confidence>=82?'收音品質良好，AI 結果可作為教師參考':scores.confidence>=58?'收音品質普通，建議老師配合現場聆聽確認':'收音資料可信度偏低，不建議直接把 AI 分數當成正式成績';
+ const competitionNote=profileName==='歌唱比賽'?'舞台表現、情感感染力與歌曲詮釋仍須由評審人工評定，系統不會自行虛構這些分數。':'';
+ return `【${profileName}｜${itemName}】\n分項：音準 ${fmt(scores.pitchScore)}｜節奏 ${fmt(scores.rhythmScore)}｜技巧 ${fmt(scores.techniqueScore)}｜完整度 ${fmt(scores.complete)}\n\n音準：${pitchText||'資料不足'}。\n節奏：${rhythmText||'資料不足'}。\n技巧：${techniqueText||'資料不足'}。\n完整度：${completeText||'資料不足'}。\n\n綜合判讀：${summary}\nAI 信心：${Math.round(scores.confidence||0)}%｜${confidence}。${competitionNote?`\n${competitionNote}`:''}`;
 }
 function calculateAudioScores(){
  const elapsed=Math.max(.1,(performance.now()-audioAssessStartedAt)/1000);
@@ -2128,7 +2179,7 @@ window.stopAudioAssessment=()=>{
  audioAssessStream?.getTracks().forEach(t=>t.stop());audioAssessStream=null;
  try{audioAssessCtx?.close()}catch(e){} audioAssessCtx=null;audioAnalyser=null;
  const scores=calculateAudioScores();micPermissionState.textContent=`已停止｜評量 ${scores.elapsed.toFixed(1)} 秒｜有效人聲 ${(scores.voiceCoverage*100).toFixed(0)}%`;
- S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.2.0',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
+ S.audioAssessment=S.audioAssessment||{history:[]};S.audioAssessment.history.push({id:crypto.randomUUID(),version:'5.2.1',date:new Date().toISOString(),studentId:currentAssessmentStudent()?.id||'',...scores,feedback:generateTeacherFeedback(scores),pitchFrames:audioPitchFrames.slice(-1800),onsets:audioOnsets.length});
  save()
 };
 
@@ -2731,5 +2782,12 @@ setTimeout(excelReady,300);
   </div>
  </div>
 </div>
+
+<script>
+window.addEventListener('DOMContentLoaded',()=>{
+ try{const saved=localStorage.getItem('fairsingScoringProfile');if(saved&&document.getElementById('scoringProfile'))document.getElementById('scoringProfile').value=saved}catch(e){}
+ setTimeout(()=>{if(typeof refreshScoringProfileUI==='function')refreshScoringProfileUI();if(typeof applyAssessmentPreset==='function')applyAssessmentPreset()},0);
+});
+</script>
 
 </body></html>
