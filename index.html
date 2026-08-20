@@ -4977,10 +4977,30 @@ window.mergeTiedPlaybackV27=function(score){
    calc:(sid)=>studentScores(sid)
  };
 
- window.FairSingGB46={
-   getState:()=>state,
-   save:()=>saveAll(),
-   render:()=>render()
+ window.FairSingGB47={
+   addStudentsBatch:(rows)=>{
+     if(!Array.isArray(rows)) return {added:0,skipped:0};
+     let added=0, skipped=0;
+     rows.forEach((r,i)=>{
+       const no=String(r?.no??'').trim();
+       const name=String(r?.name??'').trim();
+       if(!name){skipped++;return}
+       const exists=state.students.some(s=>
+         (no && String(s.no??'').trim()===no) ||
+         String(s.name??'').trim()===name
+       );
+       if(exists){skipped++;return}
+       state.students.push({
+         id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),
+         no:no || String(state.students.length+1).padStart(2,'0'),
+         name:name
+       });
+       added++;
+     });
+     saveAll();
+     render();
+     return {added,skipped,total:state.students.length};
+   }
  };
 </script>
 
@@ -5503,7 +5523,7 @@ else setTimeout(bind,80);
 李小華
 陳小美"></textarea>
   <div class="v46BatchInfo">
-   <span>目前班級：<b id="v46BatchClass">—</b></span>
+   <span>目前班級：<b id="v46BatchClass">—</b></span><span>✓ 按下後直接寫入此班成績簿</span>
    <span>預計匯入：<b id="v46BatchCount">0</b> 人</span>
   </div>
   <div class="v46BatchActions">
@@ -5548,29 +5568,22 @@ function closeModal(){
  $('v46BatchModal').classList.remove('open');
 }
 function addBatch(){
- const gb=window.FairSingGB46;
- if(!gb)return alert('成績管理尚未完成載入。');
- const st=gb.getState();
  const rows=parsedRows();
  if(!rows.length)return alert('請先貼上學生名單。');
+ if(!window.FairSingGB47)return alert('成績管理尚未完成載入，請關閉後重新進入成績管理。');
 
- let added=0, skipped=0;
- rows.forEach((r,i)=>{
-   const exists=st.students.some(s=>String(s.no).trim()===r.no || String(s.name).trim()===r.name);
-   if(exists){skipped++;return}
-   st.students.push({
-     id:'s'+Date.now()+i+Math.random().toString(36).slice(2,6),
-     no:r.no,
-     name:r.name
-   });
-   added++;
- });
- gb.save();
- gb.render();
+ const result=window.FairSingGB47.addStudentsBatch(rows);
  closeModal();
- alert(`已加入 ${added} 位學生${skipped?`，略過 ${skipped} 筆重複資料`:''}。`);
-}
 
+ const countEl=document.getElementById('gbCount');
+ if(countEl) countEl.textContent=String(result.total);
+
+ alert(
+   `已加入 ${result.added} 位學生`+
+   (result.skipped?`，略過 ${result.skipped} 筆重複／空白資料`:'')+
+   `。\n目前班級共 ${result.total} 人。`
+ );
+}
 function bind(){
  const old=$('v46BatchStudents');
  if(!old)return;
