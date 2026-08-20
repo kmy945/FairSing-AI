@@ -342,6 +342,45 @@ h2{font-size:29px} h3{font-size:22px}
 .range-note-v26{font-size:13px;color:#587080;margin-top:6px}
 </style>
 
+<style id="v39-style">
+#perfectPianoEntryV32,#gradebookEntryV33{display:none!important}
+#grandPianoV30,#gradebookV33{display:none!important}
+body.v39-open{overflow:hidden!important}
+body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!important;position:fixed!important;inset:0!important;z-index:10050!important;overflow:auto!important;background:#eef6fb!important;margin:0!important;max-width:none!important;padding:14px!important;border-radius:0!important}
+#v39Toolbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-left:6px}
+#v39Toolbar button,.v39-classbar button,.v39-classbar select{min-height:40px;border:1px solid #cad7df;border-radius:10px;padding:7px 11px;background:#fff;font-weight:900}
+#v39Toolbar .grade{background:#eaf5ec} #v39Toolbar .piano{background:#eaf6fb}
+.v39-classbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:12px 0}
+.v39-classbar label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:900;color:#496273}
+.v39-back{position:sticky;top:0;z-index:20;border:1px solid #cad7df;border-radius:10px;background:#fff;padding:9px 13px;font-weight:900;margin-bottom:10px}
+#gbClass,label:has(>#gbClass){display:none!important}
+@media(max-width:650px){#v39Toolbar button,.v39-classbar button,.v39-classbar select{font-size:13px;padding:7px 8px}}
+</style><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style id="v40-style">
+.v40-io{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.v40-io button{min-height:42px;border:1px solid #cbd8e0;border-radius:10px;padding:8px 12px;background:#fff;font-weight:900}
+.v40-io .excel{background:#e9f6ed}
+</style><style id="v42-style">
+#v42Modal{display:none;position:fixed;inset:0;z-index:20000;background:rgba(18,35,48,.48);padding:18px;overflow:auto}
+#v42Modal.open{display:flex;align-items:center;justify-content:center}
+#v42Box{width:min(620px,96vw);background:#fff;border-radius:18px;padding:20px;box-shadow:0 18px 60px #0003}
+#v42Box h2{margin:0 0 16px}
+.v42grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.v42field{display:flex;flex-direction:column;gap:5px;font-weight:800;color:#344b5b}
+.v42field input,.v42field select,.v42field textarea{font:inherit;padding:11px;border:1px solid #ccd8df;border-radius:10px;background:#fff}
+.v42wide{grid-column:1/-1}
+.v42actions{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}
+.v42actions button{padding:10px 16px;border-radius:10px;border:1px solid #ccd8df;font-weight:900;background:#fff}
+#v42OK{background:linear-gradient(90deg,#3499e6,#6d6eea);color:white;border:0}
+@media(max-width:560px){.v42grid{grid-template-columns:1fr}.v42wide{grid-column:auto}}
+</style>
+<style id="v43-save-style">
+.v43-savebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 14px;padding:10px;border:1px solid #d8e3e9;border-radius:12px;background:#f8fbfd}
+.v43-savebar button{min-height:42px;border:1px solid #cbd8e0;border-radius:10px;padding:8px 12px;background:#fff;font-weight:900}
+.v43-savebar .cloud{background:#eaf4ff}
+.v43-savebar .backup{background:#f2efff}
+#v43SyncStatus{font-size:13px;font-weight:800;color:#587080}
+</style>
 </head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
@@ -4339,6 +4378,919 @@ window.mergeTiedPlaybackV27=function(score){
       }
     };
   }
+})();
+</script>
+
+
+<style id="grand-piano-v30-style">
+#grandPianoV30{margin:22px auto;max-width:1180px;padding:18px;border:1px solid #dbe5ec;border-radius:20px;background:#fff}
+.gp-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.gp-head h2{margin:0;font-size:24px}
+.gp-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.gp-controls button,.gp-controls label{min-height:42px}
+#gpStaffWrap{margin-top:14px;border-radius:16px;background:#f8fbfd;padding:10px;overflow-x:auto}
+#gpStaff{display:block;min-width:760px;width:100%;height:310px}
+#gpKeyboardWrap{margin-top:14px;overflow-x:auto;padding:8px 2px 14px}
+#gpKeyboard{position:relative;height:190px;min-width:980px;user-select:none;touch-action:manipulation}
+.gp-white{position:absolute;top:0;height:188px;width:28px;border:1px solid #9aa9b4;background:#fff;border-radius:0 0 5px 5px;z-index:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-size:11px}
+.gp-white.active{background:#d9f2ff}
+.gp-black{position:absolute;top:0;height:116px;width:18px;background:#17212a;border-radius:0 0 4px 4px;z-index:3}
+.gp-black.active{background:#4d7f9d}
+.gp-note-label{pointer-events:none}
+.gp-tip{margin-top:8px;color:#60798b;font-size:14px;line-height:1.6}
+@media(max-width:700px){
+ #grandPianoV30{padding:12px}
+ .gp-head h2{font-size:21px}
+ #gpStaff{min-width:700px}
+}
+</style>
+
+<section id="grandPianoV30"><button class="v39-back" type="button" onclick="FairSingV39Close()">← 返回 FairSing AI</button>
+ <div class="gp-head">
+   <div>
+     <h2>🎹 完美鋼琴</h2>
+     <div class="gp-tip">自由彈奏｜大譜表對應｜看譜找琴鍵</div><div class="gp-mode-nav" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+   <button class="btn primary" id="gpFreeModeBtn" type="button">🎹 自由彈奏</button>
+   <button class="btn secondary" id="gpStaffModeBtn" type="button">🎼 大譜表對應</button>
+   <button class="btn secondary" id="gpQuizModeBtn" type="button">🧩 看譜找琴鍵</button>
+ </div>
+   </div>
+   <div class="gp-controls">
+     <label><input id="gpShowNames" type="checkbox" checked> 顯示音名</label>
+     <button class="btn secondary" id="gpSingleBtn" type="button">單音模式</button>
+     <button class="btn ghost" id="gpChordBtn" type="button">和弦模式</button>
+     <button class="btn ghost" id="gpClearBtn" type="button">清除</button>
+     <button class="btn primary" id="gpQuizBtn" type="button">開始看譜練習</button>
+     <button class="btn secondary" id="gpNextBtn" type="button" style="display:none">下一題</button>
+   </div>
+ </div>
+ <div id="gpStaffWrap"><svg id="gpStaff" viewBox="0 0 1000 310" aria-label="大譜表"></svg></div>
+ <div id="gpQuizStatus" style="display:none;margin:10px 0;padding:10px 12px;border-radius:12px;background:#eef7fb;font-weight:800;color:#315a7a">請看譜，找出正確琴鍵。</div>
+ <div id="gpKeyboardWrap"><div id="gpKeyboard"></div></div>
+ <div class="gp-tip">中央 C（C4）位於高、低音譜表之間的加線。黑鍵以升記號顯示；和弦模式可同時保留多個音。看譜找琴鍵模式會隨機出題，答對後自動下一題。</div>
+</section>
+
+<script id="grand-piano-v30-script">
+(function(){
+ const NS='http://www.w3.org/2000/svg';
+ const staff=document.getElementById('gpStaff'),kb=document.getElementById('gpKeyboard');
+ if(!staff||!kb)return;
+ let mode='single', active=new Set(), audio=null, quiz=false, quizTarget=null, quizScore=0, quizTotal=0;
+ const whitePC=[0,2,4,5,7,9,11];
+ const blackPC=new Set([1,3,6,8,10]);
+ const names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+
+ function el(tag,attrs={},txt=''){
+   const x=document.createElementNS(NS,tag);
+   Object.entries(attrs).forEach(([k,v])=>x.setAttribute(k,v));
+   if(txt)x.textContent=txt; return x;
+ }
+ function midiName(m){return names[m%12]+(Math.floor(m/12)-1)}
+ function diatonicStep(m){
+   const pc=m%12,oct=Math.floor(m/12)-1;
+   const naturalPC=[0,2,4,5,7,9,11];
+   let degree=naturalPC.indexOf(pc);
+   if(degree<0){
+     const lower=[0,1,2,3,4,5,6,7,8,9,10,11].map(p=>{
+       let best=0; naturalPC.forEach((n,i)=>{if(n<=p)best=i}); return best
+     })[pc];
+     degree=lower;
+   }
+   return oct*7+degree;
+ }
+ // Reference: treble bottom line E4 = step 4*7+2 = 30, y=105.
+ // bass top line A3 = step 3*7+5 = 26, y=185.
+ function yForMidi(m){
+   const step=diatonicStep(m);
+   if(m>=60){ return 105-(step-30)*9; } // treble
+   return 185-(step-26)*9;              // bass
+ }
+ function drawStaff(){
+   staff.innerHTML='';
+   // labels
+   staff.appendChild(el('text',{x:22,y:70,'font-size':18,'font-weight':700},'高音譜表'));
+   staff.appendChild(el('text',{x:22,y:225,'font-size':18,'font-weight':700},'低音譜表'));
+   // treble lines: E4 bottom y105, top F5 y33
+   [33,51,69,87,105].forEach(y=>staff.appendChild(el('line',{x1:110,y1:y,x2:960,y2:y,stroke:'#78909c','stroke-width':1.4})));
+   // bass lines: top A3 185, bottom G2 257
+   [185,203,221,239,257].forEach(y=>staff.appendChild(el('line',{x1:110,y1:y,x2:960,y2:y,stroke:'#78909c','stroke-width':1.4})));
+   staff.appendChild(el('text',{x:65,y:104,'font-size':72,'font-family':'serif'},'𝄞'));
+   staff.appendChild(el('text',{x:68,y:246,'font-size':64,'font-family':'serif'},'𝄢'));
+   // brace-ish connector
+   staff.appendChild(el('line',{x1:105,y1:33,x2:105,y2:257,stroke:'#526b7a','stroke-width':2.2}));
+   // central C guide
+   staff.appendChild(el('text',{x:118,y:151,'font-size':14,fill:'#60798b'},'中央 C'));
+   renderNotes();
+ }
+ function ledgerLines(x,y,m){
+   const lines=[];
+   if(m===60) lines.push(141); // middle C ledger
+   // Treble below staff: C4/D4 ledger at 141; etc.
+   if(m<60){
+     // Bass above/below ledgers as required, using y spacing.
+     for(let ly=167;ly>=y-1;ly-=18) if(y<=ly)lines.push(ly);
+     for(let ly=275;ly<=y+1;ly+=18) if(y>=ly)lines.push(ly);
+   }else{
+     for(let ly=123;ly>=y-1;ly-=18) if(y<=ly)lines.push(ly);
+     for(let ly=123;ly<=y+1;ly+=18) if(y>=ly)lines.push(ly);
+   }
+   return [...new Set(lines)];
+ }
+ function renderNotes(){
+   staff.querySelectorAll('.gp-dynamic').forEach(n=>n.remove());
+   const vals=quiz && quizTarget!==null?[quizTarget]:[...active].sort((a,b)=>a-b);
+   vals.forEach((m,i)=>{
+     const x=320+i*54, y=yForMidi(m);
+     ledgerLines(x,y,m).forEach(ly=>staff.appendChild(el('line',{class:'gp-dynamic',x1:x-14,y1:ly,x2:x+14,y2:ly,stroke:'#1f3442','stroke-width':2})));
+     const g=el('g',{class:'gp-dynamic'});
+     const note=el('ellipse',{cx:x,cy:y,rx:9,ry:6,fill:'#1879b5',transform:`rotate(-18 ${x} ${y})`});
+     g.appendChild(note);
+     // stem: B4 and above down; below B4 up
+     const down=m>=71;
+     if(down)g.appendChild(el('line',{x1:x-8,y1:y,x2:x-8,y2:y+38,stroke:'#1879b5','stroke-width':2.4}));
+     else g.appendChild(el('line',{x1:x+8,y1:y,x2:x+8,y2:y-38,stroke:'#1879b5','stroke-width':2.4}));
+     if(blackPC.has(m%12))g.appendChild(el('text',{x:x-27,y:y+6,'font-size':22,'font-family':'serif',fill:'#1879b5'},'♯'));
+     if(!quiz && document.getElementById('gpShowNames')?.checked)g.appendChild(el('text',{x:x-16,y:294,'font-size':14,fill:'#315a7a'},midiName(m)));
+     staff.appendChild(g);
+   });
+ }
+ function getAudio(){
+   const AC=window.AudioContext||window.webkitAudioContext;
+   if(!AC)return null;
+   if(!audio)audio=new AC();
+   if(audio.state==='suspended')audio.resume();
+   return audio;
+ }
+ function sound(m){
+   const c=getAudio(); if(!c)return;
+   const o=c.createOscillator(),g=c.createGain(),now=c.currentTime;
+   o.type='triangle';o.frequency.value=440*Math.pow(2,(m-69)/12);
+   g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.16,now+.015);
+   g.gain.exponentialRampToValueAtTime(.0001,now+.7);
+   o.connect(g).connect(c.destination);o.start(now);o.stop(now+.72);
+ }
+ function setActive(m){
+   if(quiz){
+     sound(m);
+     quizTotal++;
+     const st=document.getElementById('gpQuizStatus');
+     if(m===quizTarget){
+       quizScore++;
+       active.clear();active.add(m);
+       kb.querySelectorAll('[data-midi]').forEach(k=>k.classList.toggle('active',+k.dataset.midi===m));
+       if(st){st.style.background='#e9f8ef';st.textContent=`答對了！${midiName(m)}　目前 ${quizScore} / ${quizTotal}`;}
+       setTimeout(()=>nextQuiz(),700);
+     }else{
+       if(st){st.style.background='#fff1ef';st.textContent=`再試一次｜目前 ${quizScore} / ${quizTotal}`;}
+       const key=kb.querySelector(`[data-midi="${m}"]`);
+       if(key){key.classList.add('active');setTimeout(()=>key.classList.remove('active'),350)}
+     }
+     return
+   }
+   if(mode==='single')active.clear();
+   if(mode==='chord' && active.has(m))active.delete(m); else active.add(m);
+   kb.querySelectorAll('[data-midi]').forEach(k=>k.classList.toggle('active',active.has(+k.dataset.midi)));
+   sound(m);renderNotes();
+ }
+
+ function nextQuiz(){
+   // First version: natural notes C2-C6, avoiding extreme notes too frequently.
+   const pool=[];
+   for(let m=36;m<=84;m++)if(whitePC.includes(m%12))pool.push(m);
+   let candidates=pool.filter(m=>m!==quizTarget);
+   // Weight the pedagogically central C3-C5 region more heavily.
+   const central=candidates.filter(m=>m>=48&&m<=72);
+   quizTarget=(Math.random()<.72?central:candidates)[Math.floor(Math.random()*(Math.random()<.72?central:candidates).length)];
+   active.clear();
+   kb.querySelectorAll('[data-midi]').forEach(k=>k.classList.remove('active'));
+   const st=document.getElementById('gpQuizStatus');
+   if(st){st.style.display='block';st.style.background='#eef7fb';st.textContent=`第 ${quizTotal+1} 題｜請看譜，找出正確琴鍵。`;}
+   renderNotes();
+ }
+ function startQuiz(){
+   quiz=true;mode='single';quizScore=0;quizTotal=0;
+   document.getElementById('gpQuizBtn').textContent='結束看譜練習';
+   document.getElementById('gpNextBtn').style.display='';
+   nextQuiz();
+ }
+ function stopQuiz(){
+   quiz=false;quizTarget=null;active.clear();
+   document.getElementById('gpQuizBtn').textContent='🎼 看譜找琴鍵';
+   document.getElementById('gpNextBtn').style.display='none';
+   const st=document.getElementById('gpQuizStatus');
+   if(st){st.style.display='block';st.style.background='#eef7fb';st.textContent=`練習結束｜答對 ${quizScore} 次，共作答 ${quizTotal} 次。`;}
+   buildKeyboard();renderNotes();
+ }
+ function buildKeyboard(){
+   kb.innerHTML='';
+   const start=36,end=84; // C2-C6 inclusive
+   const whites=[];
+   for(let m=start;m<=end;m++)if(whitePC.includes(m%12))whites.push(m);
+   const ww=28;
+   kb.style.minWidth=(whites.length*ww+2)+'px';
+   let wi=0;
+   for(let m=start;m<=end;m++){
+     if(whitePC.includes(m%12)){
+       const k=document.createElement('button');k.type='button';k.className='gp-white';k.dataset.midi=m;
+       k.style.left=(wi*ww)+'px';
+       k.innerHTML=`<span class="gp-note-label">${document.getElementById('gpShowNames')?.checked?midiName(m):''}</span>`;
+       k.addEventListener('pointerdown',e=>{e.preventDefault();setActive(m)});
+       kb.appendChild(k);wi++;
+     }
+   }
+   // black keys: position relative to preceding white
+   wi=0;
+   for(let m=start;m<=end;m++){
+     if(whitePC.includes(m%12)){wi++;continue}
+     if(blackPC.has(m%12)){
+       const k=document.createElement('button');k.type='button';k.className='gp-black';k.dataset.midi=m;
+       k.style.left=(wi*ww-9)+'px';
+       k.title=midiName(m);
+       k.addEventListener('pointerdown',e=>{e.preventDefault();setActive(m)});
+       kb.appendChild(k);
+     }
+   }
+ }
+ document.getElementById('gpShowNames').addEventListener('change',()=>{buildKeyboard();renderNotes()});
+ document.getElementById('gpSingleBtn').addEventListener('click',()=>{mode='single';active.clear();buildKeyboard();drawStaff()});
+ document.getElementById('gpChordBtn').addEventListener('click',()=>{mode='chord'});
+ document.getElementById('gpClearBtn').addEventListener('click',()=>{active.clear();buildKeyboard();renderNotes()});
+ document.getElementById('gpQuizBtn').addEventListener('click',()=>{quiz?stopQuiz():startQuiz()});
+ document.getElementById('gpNextBtn').addEventListener('click',()=>{if(quiz)nextQuiz()});
+ buildKeyboard();drawStaff();
+})();
+</script>
+
+
+<style id="perfect-piano-entry-v32-style">
+#perfectPianoEntryV32{
+ position:fixed;right:18px;bottom:18px;z-index:9999;
+ border:0;border-radius:999px;padding:13px 18px;
+ background:#176f9c;color:#fff;font-weight:900;font-size:16px;
+ box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer
+}
+@media(max-width:700px){#perfectPianoEntryV32{right:12px;bottom:12px;font-size:15px;padding:12px 15px}}
+</style>
+<button id="perfectPianoEntryV32" type="button">🎹 完美鋼琴</button>
+
+
+<script id="perfect-piano-entry-v32-script">
+(function(){
+ const sec=document.getElementById('grandPianoV30');
+ const entry=document.getElementById('perfectPianoEntryV32');
+ if(!sec||!entry)return;
+ sec.setAttribute('data-module','perfect-piano');
+ entry.addEventListener('click',()=>{
+   sec.scrollIntoView({behavior:'smooth',block:'start'});
+   setTimeout(()=>document.getElementById('gpKeyboardWrap')?.scrollTo({left:0,behavior:'smooth'}),350);
+ });
+ const free=document.getElementById('gpFreeModeBtn');
+ const staff=document.getElementById('gpStaffModeBtn');
+ const quiz=document.getElementById('gpQuizModeBtn');
+ free?.addEventListener('click',()=>{
+   if(document.getElementById('gpQuizBtn')?.textContent.includes('結束'))document.getElementById('gpQuizBtn').click();
+   document.getElementById('gpClearBtn')?.click();
+   document.getElementById('gpKeyboardWrap')?.scrollIntoView({behavior:'smooth',block:'center'});
+ });
+ staff?.addEventListener('click',()=>{
+   if(document.getElementById('gpQuizBtn')?.textContent.includes('結束'))document.getElementById('gpQuizBtn').click();
+   document.getElementById('gpStaffWrap')?.scrollIntoView({behavior:'smooth',block:'center'});
+ });
+ quiz?.addEventListener('click',()=>{
+   const q=document.getElementById('gpQuizBtn');
+   if(q && !q.textContent.includes('結束'))q.click();
+   document.getElementById('gpStaffWrap')?.scrollIntoView({behavior:'smooth',block:'center'});
+ });
+})();
+</script>
+
+
+<style id="gradebook-v33-style">
+#gradebookV33{max-width:1280px;margin:24px auto;padding:18px;background:#fff;border:1px solid #dce6ec;border-radius:20px}
+.gb-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.gb-head h2{margin:0;font-size:26px}
+.gb-filters,.gb-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.gb-filters label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:800;color:#496273}
+.gb-filters select,.gb-filters input,.gb-actions button{min-height:42px;border:1px solid #cbd8e0;border-radius:10px;padding:7px 10px;background:#fff}
+.gb-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin:14px 0}
+.gb-card{background:#f4f9fc;border-radius:14px;padding:12px}
+.gb-card b{font-size:21px;display:block;margin-top:3px}
+.gb-table-wrap{overflow:auto;border:1px solid #dce6ec;border-radius:14px;max-height:620px}
+#gbTable{border-collapse:separate;border-spacing:0;min-width:1100px;width:max-content;background:#fff}
+#gbTable th,#gbTable td{border-right:1px solid #dfe7ec;border-bottom:1px solid #dfe7ec;padding:6px;text-align:center;min-width:88px}
+#gbTable th{position:sticky;top:0;background:#eef6fa;z-index:4;font-size:13px}
+#gbTable .gb-no{position:sticky;left:0;z-index:5;min-width:54px;background:#f8fbfd}
+#gbTable .gb-name{position:sticky;left:54px;z-index:5;min-width:108px;background:#f8fbfd;text-align:left}
+#gbTable th.gb-no,#gbTable th.gb-name{z-index:7;background:#e7f2f8}
+.gb-score{width:68px;min-height:38px;border:1px solid #ccd8df;border-radius:8px;text-align:center;font-size:16px}
+.gb-score.status{font-size:13px}
+.gb-auto{font-weight:900;background:#f8fbfd}
+.gb-col-tools{display:flex;gap:4px;justify-content:center;margin-top:4px}
+.gb-col-tools button{border:0;background:transparent;font-size:12px;cursor:pointer}
+.gb-note{font-size:13px;color:#60798b;line-height:1.6;margin-top:9px}
+#gradebookEntryV33{position:fixed;right:18px;bottom:76px;z-index:9998;border:0;border-radius:999px;padding:13px 18px;background:#496f4f;color:#fff;font-weight:900;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+@media(max-width:700px){
+ #gradebookV33{padding:12px}
+ .gb-summary{grid-template-columns:repeat(2,1fr)}
+ #gradebookEntryV33{right:12px;bottom:70px}
+}
+</style>
+
+<section id="gradebookV33"><button class="v39-back" type="button" onclick="FairSingV39Close()">← 返回 FairSing AI</button>
+ <div class="gb-head">
+  <div>
+   <h2>📊 成績管理</h2>
+   <div class="gb-note">依照原成績表架構：座號、姓名固定在左側，各次評量向右排列，平時與定期成績自動計算。</div>
+  </div>
+ </div>
+
+ 
+<div class="v43-savebar" id="v43SaveBar">
+ <button id="v43SaveLocal" type="button">💾 儲存</button>
+ <button id="v43CloudSync" class="cloud" type="button">☁️ 雲端同步</button>
+ <button id="v43Backup" class="backup" type="button">📦 完整備份</button>
+ <button id="v43Restore" class="backup" type="button">📂 還原備份</button>
+ <input id="v43RestoreFile" type="file" accept=".json,application/json" hidden>
+ <span id="v43SyncStatus">本機資料已啟用自動儲存</span>
+</div>
+
+<div class="v39-classbar">
+<label>班級<select id="v39ClassSelect"></select></label>
+<button id="v39AddClass" type="button">＋新增班級</button>
+<button id="v39RenameClass" type="button">✎ 重新命名</button>
+<button id="v39CopyClass" type="button">⧉ 複製班級設定</button>
+<button id="v39DeleteClass" type="button">刪除班級</button>
+</div><div class="gb-filters">
+  <label>學年度<input id="gbYear" value="115" inputmode="numeric"></label>
+  <label>學期<select id="gbTerm"><option value="1">第1學期</option><option value="2">第2學期</option></select></label>
+  <label>班級<input id="gbClass" value="706" placeholder="例如 706"></label>
+  <label>科目<select id="gbSubject">
+   <option>音樂</option><option>視唱聽寫</option><option>樂理</option><option>音樂欣賞</option>
+   <option>音樂史</option><option>數位音樂</option><option>樂器／術科</option><option value="__custom">＋自訂科目</option>
+  </select></label>
+  <label>平時權重<input id="gbDailyWeight" type="number" min="0" max="100" value="60"></label>
+  <label>定期權重<input id="gbExamWeight" type="number" min="0" max="100" value="40"></label>
+ </div>
+
+ <div class="v40-io">
+<button id="v40ImportClass" type="button">📥 匯入班級資訊</button>
+<button id="v40ImportExcel" class="excel" type="button">📗 Excel 匯入學生／成績</button>
+<button id="v40ExportExcel" class="excel" type="button">📗 Excel 匯出成績</button>
+<input id="v40File" type="file" accept=".xlsx,.xls,.csv" hidden>
+</div><div class="gb-actions">
+  <button id="gbAddStudent" type="button">＋新增學生</button>
+  <button id="gbAddColumn" type="button">＋新增項目</button>
+  <button id="gbTemplate" type="button">套用科目模板</button>
+  <button id="gbSave" type="button">💾 儲存</button>
+  <button id="gbExportCsv" type="button">匯出 CSV</button>
+  <button id="gbBlank" type="button">建立空白成績簿</button>
+ </div>
+
+ <div class="gb-summary">
+  <div class="gb-card">學生人數<b id="gbCount">0</b></div>
+  <div class="gb-card">學期平均<b id="gbAvg">—</b></div>
+  <div class="gb-card">最高分<b id="gbHigh">—</b></div>
+  <div class="gb-card">待補成績<b id="gbMissing">0</b></div>
+ </div>
+
+ <div class="gb-table-wrap"><table id="gbTable"></table></div>
+ <div class="gb-note">成績格可輸入 0–100，也可輸入「缺交、缺考、請假、補考、免試」。非數字狀態不會被當成 0 分計算。</div>
+</section>
+<button id="gradebookEntryV33" type="button">📊 成績管理</button>
+
+<script id="gradebook-v33-script">
+(function(){
+ const KEY='FairSingGradebookV33';
+ const $=id=>document.getElementById(id);
+ const templates={
+  '音樂':['學習單1','學習單2','學習單3','平時測驗','實作評量1','實作評量2','加分','扣分'],
+  '視唱聽寫':['視唱1','視唱2','節奏視唱','單音聽寫','音程聽寫','節奏聽寫','旋律聽寫','加分','扣分'],
+  '樂理':['學習單1','學習單2','隨堂測驗','作業','樂理測驗','綜合評量','加分','扣分'],
+  '音樂欣賞':['學習單','聆聽紀錄','課堂測驗','報告','實作','加分','扣分'],
+  '音樂史':['學習單','年代測驗','作曲家測驗','作品辨識','綜合評量','加分','扣分'],
+  '數位音樂':['課堂任務','作品1','作品2','實作評量','學習歷程','加分','扣分'],
+  '樂器／術科':['基本技巧','音準','節奏','完整度','音樂表現','術科評量','加分','扣分']
+ };
+ let state={students:[],columns:[],scores:{}};
+
+ function contextKey(){
+   return [$('gbYear').value,$('gbTerm').value,$('gbClass').value,$('gbSubject').value].join('|')
+ }
+ function loadAll(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+ function saveAll(){
+   const all=loadAll();all[contextKey()]=state;localStorage.setItem(KEY,JSON.stringify(all))
+ }
+ function loadContext(){
+   const all=loadAll();state=all[contextKey()]||{students:[],columns:[],scores:{}};
+   render()
+ }
+ function numeric(v){const n=Number(v);return Number.isFinite(n)&&v!==''?n:null}
+ function studentScores(sid){
+   const vals=state.columns.map(c=>({c,v:state.scores[sid]?.[c.id]??''}));
+   const weightedAvg=(cat)=>{
+     const items=vals.filter(x=>(x.c.category||'daily')===cat && !x.c.special && x.c.name!=='定期評量')
+       .map(x=>{const n=numeric(x.v);if(n===null)return null;return {pct:n/(+x.c.max||100)*100,w:+x.c.weight||1}}).filter(Boolean);
+     if(!items.length)return null;
+     const sw=items.reduce((a,b)=>a+b.w,0)||1;return items.reduce((a,b)=>a+b.pct*b.w,0)/sw;
+   };
+   const bonus=vals.filter(x=>x.c.special==='bonus'||x.c.name==='加分').map(x=>numeric(x.v)||0).reduce((a,b)=>a+b,0);
+   const minus=vals.filter(x=>x.c.special==='minus'||x.c.name==='扣分').map(x=>numeric(x.v)||0).reduce((a,b)=>a+b,0);
+   let daily=weightedAvg('daily'); if(daily!==null)daily=Math.max(0,Math.min(100,daily+bonus-minus));
+   let exam=weightedAvg('exam');
+   const examCol=state.columns.find(c=>c.name==='定期評量');
+   if(exam===null && examCol) exam=numeric(state.scores[sid]?.[examCol.id]??'');
+   const dw=+($('gbDailyWeight').value||60), ew=+($('gbExamWeight').value||40), sum=dw+ew||100;
+   let semester=null;
+   if(daily!==null&&exam!==null)semester=(daily*dw+exam*ew)/sum;
+   else if(daily!==null)semester=daily;
+   else if(exam!==null)semester=exam;
+   return {daily,exam,semester}
+ }
+ function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ function render(){
+   const t=$('gbTable');
+   let h='<thead><tr><th class="gb-no">座號</th><th class="gb-name">姓名</th>';
+   state.columns.forEach(c=>{
+     h+=`<th>${esc(c.name)}<div class="gb-cat-badge">${(c.category||'daily')==='exam'?'定期':'平時'}｜${esc(c.type||'其他')}</div><div class="gb-col-tools"><button data-rename="${c.id}">✎</button><button data-delcol="${c.id}">×</button></div></th>`
+   });
+   h+='<th>平時成績</th><th>定期評量</th><th>學期成績</th><th>操作</th></tr></thead><tbody>';
+   state.students.forEach((s,idx)=>{
+     const calc=studentScores(s.id);
+     h+=`<tr><td class="gb-no"><input class="gb-score" data-field="no" data-sid="${s.id}" value="${esc(s.no)}"></td>
+     <td class="gb-name"><input class="gb-score" style="width:96px" data-field="name" data-sid="${s.id}" value="${esc(s.name)}"></td>`;
+     state.columns.forEach(c=>{
+       const v=state.scores[s.id]?.[c.id]??'';
+       h+=`<td><input class="gb-score" data-sid="${s.id}" data-cid="${c.id}" value="${esc(v)}" inputmode="decimal"></td>`
+     });
+     h+=`<td class="gb-auto">${calc.daily===null?'—':calc.daily.toFixed(1)}</td>
+     <td class="gb-auto">${calc.exam===null?'—':calc.exam.toFixed(1)}</td>
+     <td class="gb-auto">${calc.semester===null?'—':calc.semester.toFixed(1)}</td>
+     <td><button data-delstudent="${s.id}">刪除</button></td></tr>`
+   });
+   h+='</tbody>';t.innerHTML=h;
+
+   t.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',e=>{
+     const sid=e.target.dataset.sid;
+     if(e.target.dataset.field){
+       const s=state.students.find(x=>x.id===sid);if(s)s[e.target.dataset.field]=e.target.value
+     }else{
+       state.scores[sid]=state.scores[sid]||{};state.scores[sid][e.target.dataset.cid]=e.target.value
+     }
+     saveAll();render()
+   }));
+   t.querySelectorAll('[data-delstudent]').forEach(b=>b.onclick=()=>{
+     const id=b.dataset.delstudent;state.students=state.students.filter(s=>s.id!==id);delete state.scores[id];saveAll();render()
+   });
+   t.querySelectorAll('[data-delcol]').forEach(b=>b.onclick=()=>{
+     const id=b.dataset.delcol;state.columns=state.columns.filter(c=>c.id!==id);saveAll();render()
+   });
+   t.querySelectorAll('[data-rename]').forEach(b=>b.onclick=()=>{
+     const c=state.columns.find(c=>c.id===b.dataset.rename);const n=prompt('評量欄名稱',c?.name||'');if(c&&n){c.name=n;saveAll();render()}
+   });
+   summary()
+ }
+ function summary(){
+   $('gbCount').textContent=state.students.length;
+   const semesters=state.students.map(s=>studentScores(s.id).semester).filter(v=>v!==null);
+   $('gbAvg').textContent=semesters.length?(semesters.reduce((a,b)=>a+b,0)/semesters.length).toFixed(1):'—';
+   $('gbHigh').textContent=semesters.length?Math.max(...semesters).toFixed(1):'—';
+   let missing=0;state.students.forEach(s=>state.columns.forEach(c=>{if((state.scores[s.id]?.[c.id]??'')==='')missing++}));
+   $('gbMissing').textContent=missing
+ }
+ function addCol(name, meta){
+   const c=Object.assign({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),name,category:'daily',type:'其他',max:100,weight:1,special:''},meta||{});
+   state.columns.push(c);saveAll();render()
+ }
+ window.gbV34AddItem=function(meta){addCol(meta.name,meta)};
+ $('gbAddStudent').onclick=()=>{
+   const no=String(state.students.length+1).padStart(2,'0');
+   state.students.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),no,name:''});saveAll();render()
+ };
+ $('gbAddColumn').onclick=()=>{const n=prompt('新增評量欄名稱','學習單');if(n)addCol(n)};
+ $('gbTemplate').onclick=()=>{
+   const sub=$('gbSubject').value,arr=templates[sub]||['學習單','平時測驗','實作評量','加分','扣分'];
+   if(!confirm('套用模板會重新建立評量欄，但保留學生名單。確定嗎？'))return;
+   state.columns=arr.map((name,i)=>({id:'c'+Date.now()+i,name,category:(name.includes('段考')||name.includes('定期')||name.includes('期末'))?'exam':'daily',type:name.replace(/[0-9０-９]+$/,''),max:100,weight:1,special:name==='加分'?'bonus':name==='扣分'?'minus':''}));
+   if(!state.columns.some(c=>(c.category||'')==='exam'))state.columns.push({id:'ce'+Date.now(),name:'定期評量',category:'exam',type:'段考',max:100,weight:1,special:''});
+   state.scores={};saveAll();render()
+ };
+ $('gbBlank').onclick=()=>{
+   if(!confirm('建立空白成績簿？會清除目前這個班級／科目的評量欄與成績。'))return;
+   state={students:[],columns:[],scores:{}};saveAll();render()
+ };
+ $('gbSave').onclick=()=>{saveAll();alert('已儲存在此裝置')};
+ $('gbExportCsv').onclick=()=>{
+   const heads=['座號','姓名',...state.columns.map(c=>c.name),'平時成績','定期評量','學期成績'];
+   const rows=state.students.map(s=>{
+     const x=studentScores(s.id);
+     return [s.no,s.name,...state.columns.map(c=>state.scores[s.id]?.[c.id]??''),x.daily?.toFixed(1)??'',x.exam?.toFixed(1)??'',x.semester?.toFixed(1)??'']
+   });
+   const csv='\ufeff'+[heads,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+   a.download=`${$('gbYear').value}-${$('gbTerm').value}_${$('gbClass').value}_${$('gbSubject').value}_成績.csv`;a.click();URL.revokeObjectURL(a.href)
+ };
+ ['gbYear','gbTerm','gbClass'].forEach(id=>$(id).addEventListener('change',loadContext));
+ $('gbSubject').addEventListener('change',()=>{
+   if($('gbSubject').value==='__custom'){
+     const n=prompt('自訂科目名稱');if(n){const o=new Option(n,n,true,true);$('gbSubject').add(o,0)}else $('gbSubject').selectedIndex=0
+   }
+   loadContext()
+ });
+ ['gbDailyWeight','gbExamWeight'].forEach(id=>$(id).addEventListener('change',render));
+ $('gradebookEntryV33').onclick=()=>$('gradebookV33').scrollIntoView({behavior:'smooth',block:'start'});
+ loadContext();
+})();
+
+ window.FairSingGB39={load:()=>loadContext(),get:()=>state,save:()=>saveAll(),render:()=>render()};
+
+ window.FairSingGB40={
+  get:()=>state, save:()=>saveAll(), render:()=>render(), load:()=>loadContext(),
+  calc:(sid)=>studentScores(sid)
+ };
+
+ window.FairSingGB42={
+   getState:()=>state,
+   addColumnDirect:(meta)=>{
+     const c={
+       id:'c'+Date.now()+Math.random().toString(36).slice(2,7),
+       name:meta.name,
+       category:meta.category||'daily',
+       type:meta.type||'作業',
+       max:Number(meta.max)||100,
+       weight:Number(meta.weight)||1,
+       special:meta.special||'',
+       date:meta.date||'',
+       note:meta.note||''
+     };
+     state.columns.push(c);
+     saveAll();
+     render();
+     return c;
+   }
+ };
+</script>
+
+
+<style id="gradebook-v34-style">
+.gb-cat-head{font-weight:900;background:#dfeef7!important}
+.gb-cat-badge{display:inline-block;padding:3px 7px;border-radius:999px;font-size:11px;margin-top:4px;background:#fff;border:1px solid #c8d8e2}
+#gbItemDialog{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:10020;display:none;align-items:center;justify-content:center;padding:18px}
+#gbItemDialog.open{display:flex}
+.gb-dialog-card{width:min(560px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+.gb-dialog-card h3{margin:0 0 14px;font-size:23px}
+.gb-dialog-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gb-dialog-grid label{font-weight:800;font-size:13px;color:#496273;display:flex;flex-direction:column;gap:5px}
+.gb-dialog-grid input,.gb-dialog-grid select,.gb-dialog-grid textarea{min-height:42px;border:1px solid #cbd8e0;border-radius:10px;padding:8px;font:inherit}
+.gb-dialog-grid .wide{grid-column:1/-1}
+.gb-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}
+.gb-dialog-actions button{min-height:42px;border-radius:10px;border:1px solid #cbd8e0;padding:8px 14px;font-weight:900}
+.gb-dialog-actions .primary{background:#3e7fd5;color:white;border:0}
+@media(max-width:600px){.gb-dialog-grid{grid-template-columns:1fr}.gb-dialog-grid .wide{grid-column:auto}}
+</style>
+<div id="gbItemDialog">
+ <div class="gb-dialog-card">
+  <h3>＋新增成績項目</h3>
+  <div class="gb-dialog-grid">
+   <label>成績類別
+    <select id="gbItemCategory"><option value="daily">平時成績</option><option value="exam">定期成績</option></select>
+   </label>
+   <label>項目類型
+    <select id="gbItemType">
+     <option>作業</option><option>學習單</option><option>小考</option><option>課堂表現</option>
+     <option>視唱</option><option>聽寫</option><option>樂理</option><option>段考</option>
+     <option>實作</option><option>術科</option><option>報告</option><option>其他</option>
+    </select>
+   </label>
+   <label class="wide">項目名稱<input id="gbItemName" placeholder="例如：學習單1、第一次段考、旋律聽寫1"></label>
+   <label>滿分<input id="gbItemMax" type="number" min="1" value="100"></label>
+   <label>類別內權重<input id="gbItemWeight" type="number" min="0" step="0.1" value="1"></label>
+   <label>日期<input id="gbItemDate" type="date"></label>
+   <label>加扣分方式
+    <select id="gbItemSpecial"><option value="">一般成績</option><option value="bonus">加分</option><option value="minus">扣分</option></select>
+   </label>
+   <label class="wide">備註<textarea id="gbItemNote" rows="2"></textarea></label>
+  </div>
+  <div class="gb-dialog-actions"><button id="gbItemCancel">取消</button><button class="primary" id="gbItemConfirm">新增</button></div>
+ </div>
+</div>
+<script id="gradebook-v34-script">
+(function(){
+ const $=id=>document.getElementById(id);
+ const dlg=$('gbItemDialog');
+ function openDlg(){
+   $('gbItemName').value=''; $('gbItemMax').value=100; $('gbItemWeight').value=1;
+   $('gbItemDate').value=''; $('gbItemNote').value=''; $('gbItemSpecial').value='';
+   dlg.classList.add('open');
+ }
+ $('gbItemCancel').onclick=()=>dlg.classList.remove('open');
+ dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.classList.remove('open')});
+ // Replace the v33 add-column handler after its script has initialized.
+ setTimeout(()=>{
+   const btn=$('gbAddColumn');
+   if(btn){ const clone=btn.cloneNode(true); btn.parentNode.replaceChild(clone,btn); clone.onclick=openDlg; }
+ },0);
+
+ $('gbItemType').onchange=()=>{
+   const t=$('gbItemType').value;
+   if(t==='段考') $('gbItemCategory').value='exam';
+   if(['作業','學習單','小考','課堂表現'].includes(t)) $('gbItemCategory').value='daily';
+   if(!$('gbItemName').value) $('gbItemName').value=t;
+ };
+ $('gbItemConfirm').onclick=()=>{
+   const name=$('gbItemName').value.trim();
+   if(!name){alert('請輸入項目名稱');return}
+   // Use the existing global UI by storing enhanced metadata in a parallel store.
+   const metaKey='FairSingGradebookV34ItemMeta';
+   let meta={}; try{meta=JSON.parse(localStorage.getItem(metaKey)||'{}')}catch(e){}
+   // Trigger old prompt-based add safely by directly locating state through DOM isn't possible,
+   // so add via a synthetic helper exposed below.
+   if(typeof window.gbV34AddItem==='function'){
+     window.gbV34AddItem({
+       name, category:$('gbItemCategory').value, type:$('gbItemType').value,
+       max:+$('gbItemMax').value||100, weight:+$('gbItemWeight').value||1,
+       date:$('gbItemDate').value, special:$('gbItemSpecial').value, note:$('gbItemNote').value
+     });
+     dlg.classList.remove('open');
+   }
+ };
+})();
+</script>
+
+<script id="v39-script">
+(function(){
+const $=id=>document.getElementById(id), CK='FairSingV39Classes', SK='FairSingGradebookV33';
+window.FairSingV39Close=()=>document.body.classList.remove('v39-open','v39-piano','v39-grade');
+function show(k){FairSingV39Close();document.body.classList.add('v39-open',k==='piano'?'v39-piano':'v39-grade')}
+function installToolbar(){
+ if($('v39Toolbar'))return;
+ const b=document.createElement('div');b.id='v39Toolbar';
+ b.innerHTML='<button class="piano" type="button">🎹 完美鋼琴</button><button class="grade" type="button">📊 成績管理</button>';
+ b.querySelector('.piano').onclick=()=>show('piano');b.querySelector('.grade').onclick=()=>show('grade');
+ const sels=['#tabs','.tabs','[role="tablist"]','.toolbar','.topbar','.nav-tabs','header nav','header'];
+ let host=null;for(const s of sels){const e=document.querySelector(s);if(e){host=e;break}}
+ if(host)host.appendChild(b);else{b.style.cssText='position:fixed;top:8px;right:8px;z-index:10000;background:#fff;padding:5px;border-radius:12px';document.body.appendChild(b)}
+}
+function classes(){try{const a=JSON.parse(localStorage.getItem(CK)||'[]');if(a.length)return a}catch(e){}return [($('gbClass')?.value||'706').trim()||'706']}
+function saveClasses(a){localStorage.setItem(CK,JSON.stringify(a))}
+function draw(sel){const e=$('v39ClassSelect'),a=classes();e.innerHTML='';a.forEach(x=>e.add(new Option(x,x)));e.value=a.includes(sel)?sel:a[0];$('gbClass').value=e.value}
+function switchTo(c){$('gbClass').value=c;window.FairSingGB39?.load()}
+function store(){try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){return {}}}
+function write(o){localStorage.setItem(SK,JSON.stringify(o))}
+function prefix(c){return [$('gbYear').value,$('gbTerm').value,c].join('|')+'|'}
+function copySettings(from,to){
+ const o=store(),fp=prefix(from),tp=prefix(to);let n=0;
+ Object.keys(o).forEach(k=>{if(k.startsWith(fp)){const subj=k.slice(fp.length),s=o[k]||{};o[tp+subj]={students:[],columns:JSON.parse(JSON.stringify(s.columns||[])),scores:{}};n++}});
+ write(o);return n
+}
+function renameData(a,b){const o=store(),ap=prefix(a),bp=prefix(b);Object.keys(o).filter(k=>k.startsWith(ap)).forEach(k=>{o[bp+k.slice(ap.length)]=o[k];delete o[k]});write(o)}
+function deleteData(c){const o=store(),p=prefix(c);Object.keys(o).filter(k=>k.startsWith(p)).forEach(k=>delete o[k]);write(o)}
+function boot(){
+ installToolbar();draw();switchTo($('v39ClassSelect').value);
+ $('v39ClassSelect').onchange=e=>switchTo(e.target.value);
+ $('v39AddClass').onclick=()=>{const n=(prompt('新班級名稱，例如 701、706、視唱聽寫A班')||'').trim();if(!n)return;const a=classes();if(a.includes(n))return alert('班級已存在');a.push(n);saveClasses(a);draw(n);switchTo(n)};
+ $('v39RenameClass').onclick=()=>{const old=$('v39ClassSelect').value,n=(prompt('重新命名班級',old)||'').trim();if(!n||n===old)return;const a=classes();if(a.includes(n))return alert('班級名稱已存在');renameData(old,n);saveClasses(a.map(x=>x===old?n:x));draw(n);switchTo(n)};
+ $('v39CopyClass').onclick=()=>{const from=$('v39ClassSelect').value,n=(prompt('輸入新班級名稱；會複製科目與評量設定，不複製學生及分數。')||'').trim();if(!n)return;const a=classes();if(a.includes(n))return alert('班級已存在');a.push(n);saveClasses(a);const count=copySettings(from,n);draw(n);switchTo(n);alert('已建立 '+n+'，複製 '+count+' 個科目設定。')};
+ $('v39DeleteClass').onclick=()=>{const c=$('v39ClassSelect').value,a=classes();if(a.length<=1)return alert('至少保留一個班級');if(!confirm('確定刪除「'+c+'」？目前學年度／學期的此班學生與成績也會刪除。'))return;deleteData(c);const b=a.filter(x=>x!==c);saveClasses(b);draw(b[0]);switchTo(b[0])};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<script id="v40-excel-script">
+(function(){
+const $=id=>document.getElementById(id);
+let mode='class';
+
+function ensureXLSX(){
+ if(typeof XLSX==='undefined')throw new Error('Excel 元件尚未載入。請確認目前有網路後再試一次。');
+}
+function norm(v){return String(v??'').trim()}
+function findKey(obj,names){
+ const keys=Object.keys(obj||{});
+ return keys.find(k=>names.includes(norm(k).toLowerCase()));
+}
+function parseRows(ws){
+ return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+}
+function currentClass(){return $('v39ClassSelect')?.value||$('gbClass')?.value||'班級'}
+function setClassName(name){
+ if(!name)return;
+ const sel=$('v39ClassSelect');
+ const existing=[...sel.options].map(o=>o.value);
+ if(!existing.includes(name)){
+   const arr=(()=>{try{return JSON.parse(localStorage.getItem('FairSingV39Classes')||'[]')}catch(e){return []}})();
+   if(!arr.includes(name)){arr.push(name);localStorage.setItem('FairSingV39Classes',JSON.stringify(arr))}
+   sel.add(new Option(name,name));
+ }
+ sel.value=name;$('gbClass').value=name;
+ window.FairSingGB40.load();
+}
+function importStudents(rows){
+ const gb=window.FairSingGB40,st=gb.get();
+ let added=0;
+ rows.forEach((r,i)=>{
+   const nk=findKey(r,['姓名','學生姓名','name']);
+   const nok=findKey(r,['座號','號碼','no','number']);
+   const name=norm(nk?r[nk]:'');
+   if(!name)return;
+   const no=norm(nok?r[nok]:'')||String(st.students.length+1).padStart(2,'0');
+   if(st.students.some(s=>norm(s.no)===no&&norm(s.name)===name))return;
+   st.students.push({id:'s'+Date.now()+i+Math.random().toString(36).slice(2,5),no,name});
+   added++;
+ });
+ gb.save();gb.render();return added
+}
+async function handleFile(file){
+ ensureXLSX();
+ const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+ const ws=wb.Sheets[wb.SheetNames[0]], rows=parseRows(ws);
+ if(!rows.length)throw new Error('Excel 沒有可讀取的資料');
+ if(mode==='class'){
+   const first=rows[0];
+   const ck=findKey(first,['班級','class','班別']);
+   const cls=norm(ck?first[ck]:'');
+   if(cls)setClassName(cls);
+   const n=importStudents(rows);
+   alert((cls?'已建立／切換班級「'+cls+'」。\n':'')+'已匯入 '+n+' 位學生。');
+ }else{
+   const n=importStudents(rows);
+   const gb=window.FairSingGB40,st=gb.get();
+   // Import score columns matching existing assessment names.
+   rows.forEach(r=>{
+     const nk=findKey(r,['姓名','學生姓名','name']),nok=findKey(r,['座號','號碼','no','number']);
+     const name=norm(nk?r[nk]:''),no=norm(nok?r[nok]:'');
+     const s=st.students.find(x=>(no&&norm(x.no)===no)||(!no&&name&&norm(x.name)===name));
+     if(!s)return;
+     st.scores[s.id]=st.scores[s.id]||{};
+     st.columns.forEach(c=>{
+       const k=Object.keys(r).find(k=>norm(k)===norm(c.name));
+       if(k&&norm(r[k])!=='')st.scores[s.id][c.id]=r[k];
+     });
+   });
+   gb.save();gb.render();
+   alert('Excel 匯入完成。新增 '+n+' 位學生，並帶入可對應的成績欄位。');
+ }
+}
+function exportExcel(){
+ ensureXLSX();
+ const gb=window.FairSingGB40,st=gb.get();
+ const heads=['班級','座號','姓名',...st.columns.map(c=>c.name),'平時成績','定期評量','學期成績'];
+ const rows=st.students.map(s=>{
+   const c=gb.calc(s.id);
+   return [currentClass(),s.no,s.name,...st.columns.map(col=>st.scores[s.id]?.[col.id]??''),
+     c.daily==null?'':Number(c.daily.toFixed(1)),c.exam==null?'':Number(c.exam.toFixed(1)),c.semester==null?'':Number(c.semester.toFixed(1))]
+ });
+ const ws=XLSX.utils.aoa_to_sheet([heads,...rows]);
+ ws['!cols']=heads.map((h,i)=>({wch:i===2?16:Math.max(10,String(h).length*2)}));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'成績');
+ const year=$('gbYear').value,term=$('gbTerm').value,sub=$('gbSubject').value;
+ XLSX.writeFile(wb,year+'-'+term+'_'+currentClass()+'_'+sub+'_成績.xlsx');
+}
+$('v40ImportClass').onclick=()=>{mode='class';$('v40File').click()};
+$('v40ImportExcel').onclick=()=>{mode='scores';$('v40File').click()};
+$('v40ExportExcel').onclick=()=>{try{exportExcel()}catch(e){alert(e.message)}};
+$('v40File').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{await handleFile(f)}catch(err){alert('匯入失敗：'+err.message)}e.target.value=''};
+})();
+</script>
+
+<div id="v42Modal" aria-hidden="true">
+<div id="v42Box">
+<h2>＋新增成績項目</h2>
+<div class="v42grid">
+<label class="v42field">成績性質
+<select id="v42Cat"><option value="daily">平時成績</option><option value="exam">定期成績</option></select>
+</label>
+<label class="v42field">項目類型
+<select id="v42Type"></select>
+</label>
+<label class="v42field v42wide">項目名稱
+<input id="v42Name" placeholder="例如：作業1、學習單2、第一次段考、節奏實作">
+</label>
+<label class="v42field">滿分<input id="v42Max" type="number" min="1" value="100"></label>
+<label class="v42field">權重<input id="v42Weight" type="number" min="0.01" step="0.01" value="1"></label>
+<label class="v42field">日期<input id="v42Date" type="date"></label>
+<label class="v42field">特殊項目
+<select id="v42Special"><option value="">一般</option><option value="bonus">加分</option><option value="deduct">扣分</option></select>
+</label>
+<label class="v42field v42wide">備註<textarea id="v42Note" rows="2"></textarea></label>
+</div>
+<div class="v42actions"><button id="v42Cancel" type="button">取消</button><button id="v42OK" type="button">建立項目</button></div>
+</div></div><script id="v42-script">
+(function(){
+const $=id=>document.getElementById(id);
+const types={
+ daily:['作業','學習單','平時測驗','課堂表現','練習紀錄','視唱','聽寫','樂理練習','其他'],
+ exam:['段考','實作','術科測驗','期中評量','期末評量','視唱測驗','聽寫測驗','樂理測驗','其他']
+};
+function fillTypes(){
+ const cat=$('v42Cat').value, s=$('v42Type');s.innerHTML='';
+ types[cat].forEach(x=>s.add(new Option(x,x)));
+}
+function openModal(){
+ fillTypes();$('v42Name').value='';$('v42Max').value='100';$('v42Weight').value='1';
+ $('v42Date').value='';$('v42Special').value='';$('v42Note').value='';
+ $('v42Modal').classList.add('open');setTimeout(()=>$('v42Name').focus(),50);
+}
+function closeModal(){$('v42Modal').classList.remove('open')}
+function bind(){
+ const old=$('gbAddColumn'); if(!old)return;
+ const btn=old.cloneNode(true);old.replaceWith(btn);
+ btn.onclick=openModal;
+ $('v42Cat').onchange=fillTypes;
+ $('v42Cancel').onclick=closeModal;
+ $('v42Modal').onclick=e=>{if(e.target===$('v42Modal'))closeModal()};
+ $('v42OK').onclick=()=>{
+   const name=$('v42Name').value.trim();
+   if(!name)return alert('請輸入項目名稱。');
+   if(!window.FairSingGB42)return alert('成績管理尚未完成載入，請重新開啟成績管理。');
+   window.FairSingGB42.addColumnDirect({
+     name,category:$('v42Cat').value,type:$('v42Type').value,
+     max:$('v42Max').value,weight:$('v42Weight').value,date:$('v42Date').value,
+     special:$('v42Special').value,note:$('v42Note').value
+   });
+   closeModal();
+ };
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
+</script>
+<script id="v43-save-script">
+(function(){
+const $=id=>document.getElementById(id);
+const KEYS=['FairSingGradebookV33','FairSingGradebookV39Classes','FairSingGradebookV34ItemMeta'];
+const status=t=>{if($('v43SyncStatus'))$('v43SyncStatus').textContent=t};
+function payload(){
+ const data={version:43,app:'FairSing AI',savedAt:new Date().toISOString(),gradebook:{}};
+ KEYS.forEach(k=>{try{data.gradebook[k]=JSON.parse(localStorage.getItem(k)||'null')}catch(e){data.gradebook[k]=localStorage.getItem(k)}});
+ return data;
+}
+function download(obj,name){
+ const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json;charset=utf-8'});
+ const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),700);
+}
+function restoreObject(obj){
+ if(!obj||obj.app!=='FairSing AI'||!obj.gradebook)throw new Error('這不是 FairSing AI 成績備份檔');
+ Object.entries(obj.gradebook).forEach(([k,v])=>{
+   if(v===null||v===undefined)return;
+   localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));
+ });
+ location.reload();
+}
+function localSave(){
+ try{
+   // Existing gradebook code saves on changes; force current state save too.
+   window.FairSingGB40?.save?.();
+   window.FairSingGB39?.saveAll?.();
+   status('✓ 已儲存到本機 '+new Date().toLocaleTimeString());
+ }catch(e){status('本機儲存失敗')}
+}
+function getUid(){
+ const auth=window.auth||window.firebaseAuth||window.FairSingAuth;
+ return auth?.currentUser?.uid||null;
+}
+async function cloudSync(){
+ const uid=getUid();
+ if(!uid){alert('請先使用 Google 登入，再進行雲端同步。');return}
+ // Reuse existing FairSing cloud helpers if the app exposes them.
+ const data=payload();
+ try{
+   if(typeof window.saveToCloud==='function'){
+     await window.saveToCloud({gradebookV43:data});
+     status('☁️ 已同步 '+new Date().toLocaleTimeString());return;
+   }
+   if(typeof window.cloudSave==='function'){
+     await window.cloudSave({gradebookV43:data});
+     status('☁️ 已同步 '+new Date().toLocaleTimeString());return;
+   }
+   // Firebase modular SDK variables/functions may not be globals in every historical build.
+   // Do not invent a second Firebase app or collection path.
+   alert('目前這個離線測試檔沒有公開既有 Firestore 儲存函式。完整備份與本機儲存可正常使用；雲端同步按鈕已保留，部署到原 FairSing AI Firebase 版本時需接回既有雲端儲存函式。');
+   status('☁️ 尚未接回既有 Firestore 儲存函式');
+ }catch(e){
+   console.error(e);alert('雲端同步失敗：'+e.message);status('☁️ 同步失敗');
+ }
+}
+function boot(){
+ $('v43SaveLocal')?.addEventListener('click',localSave);
+ $('v43Backup')?.addEventListener('click',()=>{
+   const d=new Date(),stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+   download(payload(),'FairSing_AI_成績完整備份_'+stamp+'.json');
+   status('📦 已建立完整備份');
+ });
+ $('v43Restore')?.addEventListener('click',()=>$('v43RestoreFile').click());
+ $('v43RestoreFile')?.addEventListener('change',async e=>{
+   const f=e.target.files?.[0];if(!f)return;
+   try{
+     const obj=JSON.parse(await f.text());
+     if(confirm('確定還原這份成績備份？目前本機成績資料將被備份檔取代。'))restoreObject(obj);
+   }catch(err){alert('還原失敗：'+err.message)}
+   e.target.value='';
+ });
+ $('v43CloudSync')?.addEventListener('click',cloudSync);
+ // Autosave safety marker every 30 seconds and on page leave.
+ setInterval(()=>{try{window.FairSingGB40?.save?.();window.FairSingGB39?.saveAll?.()}catch(e){}},30000);
+ window.addEventListener('beforeunload',()=>{try{window.FairSingGB40?.save?.();window.FairSingGB39?.saveAll?.()}catch(e){}});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
