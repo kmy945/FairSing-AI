@@ -5599,4 +5599,85 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+<script id="v48-class-recovery">
+(function(){
+const $=id=>document.getElementById(id);
+const CLASSKEY='FairSingGradebookV39Classes';
+const STOREKEY='FairSingGradebookV33';
+
+function readStore(){
+ try{return JSON.parse(localStorage.getItem(STOREKEY)||'{}')}catch(e){return {}}
+}
+function explicitClasses(){
+ try{
+   const a=JSON.parse(localStorage.getItem(CLASSKEY)||'[]');
+   return Array.isArray(a)?a:[];
+ }catch(e){return []}
+}
+function discoverClasses(){
+ const y=$('gbYear')?.value||'', t=$('gbTerm')?.value||'';
+ const prefix=y+'|'+t+'|';
+ const found=[];
+ Object.keys(readStore()).forEach(k=>{
+   if(!k.startsWith(prefix))return;
+   const rest=k.slice(prefix.length);
+   const cls=rest.split('|')[0];
+   if(cls && !found.includes(cls))found.push(cls);
+ });
+ return found;
+}
+function mergedClasses(){
+ const all=[...explicitClasses(),...discoverClasses()];
+ const current=$('gbClass')?.value||$('v39ClassSelect')?.value||'';
+ if(current)all.push(current);
+ return [...new Set(all.filter(Boolean))];
+}
+function saveList(a){
+ localStorage.setItem(CLASSKEY,JSON.stringify(a));
+}
+function refreshClasses(prefer){
+ const sel=$('v39ClassSelect'); if(!sel)return;
+ const classes=mergedClasses();
+ if(!classes.length)classes.push('706');
+ const old=prefer||sel.value||$('gbClass')?.value||classes[0];
+ sel.innerHTML='';
+ classes.forEach(c=>sel.add(new Option(c,c)));
+ sel.value=classes.includes(old)?old:classes[0];
+ if($('gbClass'))$('gbClass').value=sel.value;
+ saveList(classes);
+}
+function switchAndLoad(){
+ const sel=$('v39ClassSelect'); if(!sel)return;
+ if($('gbClass'))$('gbClass').value=sel.value;
+ window.FairSingGB44?.load?.();
+ window.FairSingGB39?.loadContext?.();
+ window.FairSingGB40?.load?.();
+}
+function boot(){
+ refreshClasses();
+ const sel=$('v39ClassSelect');
+ if(sel){
+   const clone=sel.cloneNode(true);sel.replaceWith(clone);
+   clone.addEventListener('change',()=>{
+     if($('gbClass'))$('gbClass').value=clone.value;
+     switchAndLoad();
+   });
+ }
+ ['gbYear','gbTerm'].forEach(id=>{
+   $(id)?.addEventListener('change',()=>setTimeout(()=>{
+     refreshClasses();
+     switchAndLoad();
+   },50));
+ });
+ // Refresh after restores/cloud sync/UI changes.
+ const refreshBtnIds=['v43Restore','v43CloudSync','v39AddClass','v39RenameClass','v39CopyClass','v39DeleteClass'];
+ refreshBtnIds.forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(()=>refreshClasses(),700)));
+ window.FairSingRefreshClassesV48=refreshClasses;
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,120));
+else setTimeout(boot,120);
+})();
+</script>
+
 </body></html>
