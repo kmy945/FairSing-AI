@@ -1251,6 +1251,28 @@ C 大調：無調號　｜　G 大調：F♯　｜　D 大調：F♯、C♯　�
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';import{getFirestore,doc,getDoc,setDoc,onSnapshot,serverTimestamp}from'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
 const cfg={apiKey:'AIzaSyAZy_Xf-WBo3JPYMJRbBlyWePw5lhduA2w',authDomain:'fairsing-ai.firebaseapp.com',projectId:'fairsing-ai',storageBucket:'fairsing-ai.firebasestorage.app',messagingSenderId:'1018348024170',appId:'1:1018348024170:web:cbce3697ce8438d7d13513'};const fapp=initializeApp(cfg),auth=getAuth(fapp),db=getFirestore(fapp),provider=new GoogleAuthProvider();
+window.FairSingCloudV45={
+ getUser:()=>auth.currentUser,
+ waitForUser:()=>new Promise(resolve=>{
+   if(auth.currentUser)return resolve(auth.currentUser);
+   let done=false;
+   const off=onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)});
+   setTimeout(()=>{if(!done){done=true;off();resolve(auth.currentUser||null)}},1800);
+ }),
+ saveGradebook:async(data)=>{
+   const u=auth.currentUser;if(!u)throw new Error('NOT_SIGNED_IN');
+   await setDoc(doc(db,'teachers',u.uid,'app','gradebook'),{
+     payload:data,updatedAt:serverTimestamp(),version:45
+   },{merge:true});
+   return {uid:u.uid,email:u.email||'',displayName:u.displayName||''};
+ },
+ loadGradebook:async()=>{
+   const u=auth.currentUser;if(!u)throw new Error('NOT_SIGNED_IN');
+   const snap=await getDoc(doc(db,'teachers',u.uid,'app','gradebook'));
+   return snap.exists()?snap.data():null;
+ }
+};
+
 const D={classes:[],templates:[{id:'v',name:'伴奏歌唱',type:'vocal',ai:['音準','節奏','穩定度'],teacher:['音色','情感','台風']},{id:'a',name:'清唱',type:'acapella',ai:['音準','節奏','穩定度','音域'],teacher:['咬字','情感','自信']},{id:'f',name:'自由演唱',type:'free',ai:['音準','穩定度','音域'],teacher:['音樂性','表現力','創意']},{id:'r',name:'直笛獨奏',type:'recorder',ai:['音準','節奏','音符正確率','音長'],teacher:['音色','運舌','換氣']},{id:'p',name:'節奏打擊',type:'percussion',ai:['拍點準確度','節奏正確率','速度穩定度','漏拍與多拍'],teacher:['姿勢','協調性','力度控制','完整度']},{id:'ci',name:'自訂樂器',type:'customInstrument',instrument:'其他',useMetronome:true,needBacking:false,useScoreReference:false,ai:['音準','節奏','穩定度'],teacher:['音色','技巧','完整度']}],orders:{},records:[],session:null,draft:null,settings:{sw:80,tw:20},metronome:{bpm:80,beats:4,countIn:1,continue:true},
 curriculumMeta:{courseName:'音樂',publisher:'康軒',semester:'115學年度上學期'},
 curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.1.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
@@ -5256,30 +5278,38 @@ function localSave(){
    status('✓ 已儲存到本機 '+new Date().toLocaleTimeString());
  }catch(e){status('本機儲存失敗')}
 }
-function getUid(){
- const auth=window.auth||window.firebaseAuth||window.FairSingAuth;
- return auth?.currentUser?.uid||null;
-}
+
 async function cloudSync(){
- const uid=getUid();
- if(!uid){alert('請先使用 Google 登入，再進行雲端同步。');return}
- // Reuse existing FairSing cloud helpers if the app exposes them.
- const data=payload();
  try{
-   if(typeof window.saveToCloud==='function'){
-     await window.saveToCloud({gradebookV43:data});
-     status('☁️ 已同步 '+new Date().toLocaleTimeString());return;
+   const cloud=window.FairSingCloudV45;
+   if(!cloud)return alert('Firebase 雲端模組尚未載入，請重新整理後再試。');
+   const user=await cloud.waitForUser();
+   if(!user){
+     alert('目前是訪客模式。請先返回 FairSing AI 首頁使用 Google 登入。');
+     status('☁️ 尚未登入 Google');
+     return;
    }
-   if(typeof window.cloudSave==='function'){
-     await window.cloudSave({gradebookV43:data});
-     status('☁️ 已同步 '+new Date().toLocaleTimeString());return;
+   status('🔄 正在比對雲端資料…');
+   const remote=await cloud.loadGradebook();
+   const local=payload();
+   if(remote?.payload?.gradebook){
+     const remoteTime=remote.payload.savedAt||'';
+     const localTime=local.savedAt||'';
+     const useRemote=confirm(
+       '雲端已有成績備份。\\n\\n按「確定」：從雲端載入到此裝置\\n按「取消」：把此裝置目前資料上傳到雲端'
+     );
+     if(useRemote){
+       restoreObject(remote.payload);
+       return;
+     }
    }
-   // Firebase modular SDK variables/functions may not be globals in every historical build.
-   // Do not invent a second Firebase app or collection path.
-   alert('目前這個離線測試檔沒有公開既有 Firestore 儲存函式。完整備份與本機儲存可正常使用；雲端同步按鈕已保留，部署到原 FairSing AI Firebase 版本時需接回既有雲端儲存函式。');
-   status('☁️ 尚未接回既有 Firestore 儲存函式');
+   await cloud.saveGradebook(local);
+   status('☁️ 已同步：'+(user.email||user.displayName||'Google 帳號')+'｜'+new Date().toLocaleTimeString());
  }catch(e){
-   console.error(e);alert('雲端同步失敗：'+e.message);status('☁️ 同步失敗');
+   console.error(e);
+   if(e?.message==='NOT_SIGNED_IN') alert('請先使用 Google 登入。');
+   else alert('雲端同步失敗：'+(e?.message||e));
+   status('☁️ 同步失敗');
  }
 }
 function boot(){
@@ -5426,6 +5456,13 @@ function bind(){
  }
  // Existing v40/v43 handlers are retained for Excel/import/save/backup.
  msg('✓ 功能鍵已初始化（'+ok+' 個核心按鍵）');
+ setTimeout(async()=>{
+   try{
+     const u=await window.FairSingCloudV45?.waitForUser?.();
+     const st=document.getElementById('v43SyncStatus');
+     if(st) st.textContent=u ? ('☁️ Google 已登入：'+(u.email||u.displayName||'教師帳號')) : '💾 訪客模式：目前只儲存在本機';
+   }catch(e){}
+ },250);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,80));
 else setTimeout(bind,80);
