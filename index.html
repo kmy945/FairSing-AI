@@ -1428,6 +1428,39 @@ window.FairSingRosterBridgeV57={
     try{render()}catch(e){}
     window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
     return {total:rr.valid.length,removed:rr.orphans.length};
+  },
+  selectClass(className){
+    const n=String(className||'').trim();
+    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c)return false;
+    selClass=c.id; selStudent=null;
+    try{render()}catch(e){}
+    return true;
+  },
+  upsertStudent(className,student){
+    const n=String(className||'').trim();
+    if(!n)return null;
+    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c){c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c)}
+    let s=student?.id?(c.students||[]).find(x=>x.id===student.id):null;
+    if(!s){
+      const no=String(student?.no||'').trim(),nm=String(student?.name||'').trim();
+      s=(c.students||[]).find(x=>(no&&String(x.no||'').trim()===no)||(nm&&String(x.name||'').trim()===nm));
+    }
+    if(s){
+      if(student?.no!==undefined)s.no=String(student.no).trim();
+      if(student?.name!==undefined)s.name=String(student.name).trim();
+    }else{
+      s={id:student?.id||crypto.randomUUID(),no:String(student?.no||'').trim(),name:String(student?.name||'').trim()};
+      c.students.push(s);
+    }
+    c.students=(c.students||[]).filter(x=>String(x.name||'').trim());
+    c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    selClass=c.id;
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
+    return {...s};
   }
 };
 
@@ -5014,15 +5047,7 @@ window.mergeTiedPlaybackV27=function(score){
  function saveAll(){
    const all=loadAll();
    all[contextKey()]={columns:state.columns,scores:state.scores};
-   localStorage.setItem(KEY,JSON.stringify(all));
-   const bridge=window.FairSingRosterBridgeV57;
-   if(bridge){
-     bridge.replaceRoster($('gbClass').value,state.students);
-   }else{
-     const rosters=loadRosters();
-     rosters[rosterKey()]=state.students;
-     saveRosters(rosters);
-   }
+   localStorage.setItem(KEY,JSON.stringify(all))
  }
  function loadContext(){
    const all=loadAll();
@@ -5091,14 +5116,32 @@ window.mergeTiedPlaybackV27=function(score){
    t.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',e=>{
      const sid=e.target.dataset.sid;
      if(e.target.dataset.field){
-       const s=state.students.find(x=>x.id===sid);if(s)s[e.target.dataset.field]=e.target.value
+       const field=e.target.dataset.field;
+       const s=state.students.find(x=>x.id===sid);
+       if(s){
+         s[field]=e.target.value;
+         const bridge=window.FairSingRosterBridgeV57;
+         if(bridge){
+           bridge.upsertStudent($('gbClass').value,{id:s.id,no:s.no,name:s.name});
+           loadContext();
+           return;
+         }
+       }
      }else{
-       state.scores[sid]=state.scores[sid]||{};state.scores[sid][e.target.dataset.cid]=e.target.value
+       state.scores[sid]=state.scores[sid]||{};
+       state.scores[sid][e.target.dataset.cid]=e.target.value;
      }
      saveAll();render()
    }));
    t.querySelectorAll('[data-delstudent]').forEach(b=>b.onclick=()=>{
-     const id=b.dataset.delstudent;state.students=state.students.filter(s=>s.id!==id);delete state.scores[id];saveAll();render()
+     const id=b.dataset.delstudent;
+     const bridge=window.FairSingRosterBridgeV57;
+     if(bridge){
+       bridge.deleteStudent($('gbClass').value,id);
+       delete state.scores[id];
+       saveAll();loadContext();return;
+     }
+     state.students=state.students.filter(s=>s.id!==id);delete state.scores[id];saveAll();render()
    });
    t.querySelectorAll('[data-delcol]').forEach(b=>b.onclick=()=>{
      const id=b.dataset.delcol;state.columns=state.columns.filter(c=>c.id!==id);saveAll();render()
@@ -5123,7 +5166,15 @@ window.mergeTiedPlaybackV27=function(score){
  window.gbV34AddItem=function(meta){addCol(meta.name,meta)};
  $('gbAddStudent').onclick=()=>{
    const no=String(state.students.length+1).padStart(2,'0');
-   state.students.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),no,name:''});saveAll();render()
+   const name=(prompt('學生姓名')||'').trim();
+   if(!name)return;
+   const bridge=window.FairSingRosterBridgeV57;
+   if(bridge){
+     bridge.addStudents($('gbClass').value,[{no,name}]);
+     bridge.selectClass?.($('gbClass').value);
+     loadContext();return;
+   }
+   state.students.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),no,name});render()
  };
  $('gbAddColumn').onclick=()=>{const n=prompt('新增評量欄名稱','學習單');if(n)addCol(n)};
  $('gbTemplate').onclick=()=>{
@@ -5135,7 +5186,7 @@ window.mergeTiedPlaybackV27=function(score){
  };
  $('gbBlank').onclick=()=>{
    if(!confirm('建立空白成績簿？會清除目前這個班級／科目的評量欄與成績。'))return;
-   state={students:[],columns:[],scores:{}};saveAll();render()
+   state={students:state.students.map(s=>({...s})),columns:[],scores:{}};saveAll();render()
  };
  $('gbSave').onclick=()=>{saveAll();alert('已儲存在此裝置')};
  $('gbExportCsv').onclick=()=>{
@@ -5169,6 +5220,7 @@ window.mergeTiedPlaybackV27=function(score){
       const bridge=window.FairSingRosterBridgeV57;
       if(bridge){
         const result=bridge.addStudents($('gbClass').value,rows);
+        bridge.selectClass?.($('gbClass').value);
         loadContext();
         return result;
       }
@@ -5424,6 +5476,7 @@ function importClassInfo(rows){
    const result=bridge?.addStudents?.(cls,normalizeStudentRows(rs));
    added+=result?.added||0;
  });
+ bridge?.selectClass?.(currentClass());
  window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:currentClass()}}));
  window.FairSingGradebookCoreV53?.reload?.();
  return {classes:grouped.size,students:added,message:`已處理 ${grouped.size} 個班級`};
@@ -6045,6 +6098,29 @@ function boot(){
  }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+
+<script id="v61-roster-status">
+(function(){
+const $=id=>document.getElementById(id);
+function update(){
+ const cls=$('v39ClassSelect')?.value||$('gbClass')?.value||'';
+ const b=window.FairSingRosterBridgeV57;
+ const portal=b?.getClassByName?.(cls)?.students?.length??0;
+ const grade=Number(document.getElementById('gbCount')?.textContent||0);
+ let e=document.getElementById('v61RosterStatus');
+ if(!e){
+   e=document.createElement('div');e.id='v61RosterStatus';
+   e.style.cssText='margin:8px 0;font-size:13px;font-weight:800;color:#587080';
+   const host=document.getElementById('gradebookV33');
+   if(host)host.insertBefore(e,host.firstChild);
+ }
+ if(e)e.textContent=`👥 共用名冊：${cls}｜班級/學生 ${portal} 人｜成績管理 ${grade} 人${portal===grade?' ✓':''}`;
+}
+window.addEventListener('fairsing-roster-changed',()=>setTimeout(update,100));
+document.addEventListener('DOMContentLoaded',()=>setTimeout(update,600));
+setInterval(update,1200);
 })();
 </script>
 </body></html>
