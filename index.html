@@ -402,7 +402,7 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 <style id="v49-login-guard-style">
 #login button:disabled{opacity:.65;cursor:wait;pointer-events:none}
 </style>
-<style id="v54-style">.v54act{display:flex;gap:5px}.v54act button{padding:5px 8px;border:1px solid #ccd8df;border-radius:8px;background:#fff}.v54act .del{background:#fff2f2}</style></head><body>
+</head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
@@ -4842,12 +4842,54 @@ window.mergeTiedPlaybackV27=function(score){
  function contextKey(){
    return [$('gbYear').value,$('gbTerm').value,$('gbClass').value,$('gbSubject').value].join('|')
  }
+ const ROSTER_KEY='FairSingRostersV56';
+ const LEGACY_BACKUP_KEY='FairSingLegacyRosterBackupV56';
+ function rosterKey(){
+   return [$('gbYear').value,$('gbTerm').value,$('gbClass').value].join('|')
+ }
  function loadAll(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+ function loadRosters(){try{return JSON.parse(localStorage.getItem(ROSTER_KEY)||'{}')}catch(e){return {}}}
+ function saveRosters(x){localStorage.setItem(ROSTER_KEY,JSON.stringify(x))}
+ function studentSignature(a){
+   return JSON.stringify((Array.isArray(a)?a:[]).map(s=>[String(s?.no??'').trim(),String(s?.name??'').trim()]))
+ }
+ function migrateRosterIfSafe(all,rosters){
+   const rk=rosterKey();
+   if(Object.prototype.hasOwnProperty.call(rosters,rk))return;
+   const current=all[contextKey()]?.students||[];
+   if(!current.length){rosters[rk]=[];saveRosters(rosters);return}
+   const y=$('gbYear').value,t=$('gbTerm').value;
+   const sig=studentSignature(current);
+   const matchingClasses=new Set();
+   Object.entries(all).forEach(([k,v])=>{
+     const p=k.split('|');
+     if(p[0]===y&&p[1]===t&&p[2]&&studentSignature(v?.students||[])===sig)matchingClasses.add(p[2]);
+   });
+   if(matchingClasses.size>1){
+     let backup={};try{backup=JSON.parse(localStorage.getItem(LEGACY_BACKUP_KEY)||'{}')}catch(e){}
+     backup[rk]=current;
+     localStorage.setItem(LEGACY_BACKUP_KEY,JSON.stringify(backup));
+     rosters[rk]=[];
+   }else rosters[rk]=current;
+   saveRosters(rosters);
+ }
  function saveAll(){
-   const all=loadAll();all[contextKey()]=state;localStorage.setItem(KEY,JSON.stringify(all))
+   const all=loadAll(),rosters=loadRosters();
+   rosters[rosterKey()]=state.students;
+   saveRosters(rosters);
+   all[contextKey()]={columns:state.columns,scores:state.scores};
+   localStorage.setItem(KEY,JSON.stringify(all))
  }
  function loadContext(){
-   const all=loadAll();state=all[contextKey()]||{students:[],columns:[],scores:{}};
+   const all=loadAll(),rosters=loadRosters();
+   migrateRosterIfSafe(all,rosters);
+   const rr=loadRosters();
+   const book=all[contextKey()]||{};
+   state={
+     students:Array.isArray(rr[rosterKey()])?rr[rosterKey()]:[],
+     columns:Array.isArray(book.columns)?book.columns:[],
+     scores:(book.scores&&typeof book.scores==='object')?book.scores:{}
+   };
    render()
  }
  function numeric(v){const n=Number(v);return Number.isFinite(n)&&v!==''?n:null}
@@ -4965,6 +5007,12 @@ window.mergeTiedPlaybackV27=function(score){
  ['gbDailyWeight','gbExamWeight'].forEach(id=>$(id).addEventListener('change',render));
  $('gradebookEntryV33').onclick=()=>$('gradebookV33').scrollIntoView({behavior:'smooth',block:'start'});
 
+ window.FairSingRosterV56={
+   rosterKey:()=>rosterKey(),
+   getStudents:()=>state.students.map(s=>({...s})),
+   reload:()=>loadContext(),
+   save:()=>saveAll()
+ };
  window.FairSingGradebookCoreV53={
    addStudentsBatch:(rows)=>{
      if(!Array.isArray(rows))return {added:0,skipped:0,total:state.students.length};
@@ -4996,57 +5044,6 @@ window.mergeTiedPlaybackV27=function(score){
  };
  loadContext();
 })();
-
-
-/* v54: truly isolate roster/grades by year|term|class|subject */
-function gb54Key(){
-  return [String($('gbYear')?.value||'115').trim(),
-          String($('gbTerm')?.value||'第1學期').trim(),
-          String($('gbClass')?.value||'706').trim(),
-          String($('gbSubject')?.value||'音樂').trim()].join('|');
-}
-function gb54ReadAll(){
-  try{return JSON.parse(localStorage.getItem('FairSingGradebookV33')||'{}')}catch(e){return {}}
-}
-function gb54Norm(b){
-  return {students:Array.isArray(b?.students)?b.students:[],
-          columns:Array.isArray(b?.columns)?b.columns:[],
-          scores:(b?.scores&&typeof b.scores==='object')?b.scores:{}};
-}
-function gb54Save(){
-  const all=gb54ReadAll();
-  all[gb54Key()]=gb54Norm(state);
-  localStorage.setItem('FairSingGradebookV33',JSON.stringify(all));
-}
-function gb54Load(){
-  const all=gb54ReadAll();
-  state=gb54Norm(all[gb54Key()]);
-  render();
-}
-window.FairSingGradebookCoreV54={
-  load:gb54Load,
-  save:gb54Save,
-  snapshot:()=>JSON.parse(JSON.stringify(state)),
-  addBatch:(rows)=>{
-    let added=0,skipped=0;
-    (rows||[]).forEach((r,i)=>{
-      const no=String(r?.no??'').trim(),name=String(r?.name??'').trim();
-      if(!name){skipped++;return}
-      if(state.students.some(s=>(no&&String(s.no??'').trim()===no)||String(s.name??'').trim()===name)){skipped++;return}
-      state.students.push({id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),no:no||String(state.students.length+1).padStart(2,'0'),name});
-      added++;
-    });
-    gb54Save();render();return {added,skipped,total:state.students.length};
-  },
-  editStudent:(id,no,name)=>{
-    const s=state.students.find(x=>x.id===id);if(!s)return false;
-    s.no=no;s.name=name;gb54Save();render();return true;
-  },
-  deleteStudent:(id)=>{
-    state.students=state.students.filter(x=>x.id!==id);
-    delete state.scores[id];gb54Save();render();return true;
-  }
-};
 </script>
 
 
@@ -5713,37 +5710,21 @@ else setTimeout(boot,120);
 })();
 </script>
 \n
-\n<script id="v54-script">
+\n
+<script id="v56-class-switch">
 (function(){
 const $=id=>document.getElementById(id);
-function loadCurrent(){
-  if($('v39ClassSelect')&&$('gbClass'))$('gbClass').value=$('v39ClassSelect').value;
-  window.FairSingGradebookCoreV54?.load?.();
+function bind(){
+ const old=$('v39ClassSelect'); if(!old)return;
+ const sel=old.cloneNode(true); old.replaceWith(sel);
+ sel.addEventListener('change',()=>{
+   const hidden=$('gbClass'); if(!hidden)return;
+   hidden.value=sel.value;
+   hidden.dispatchEvent(new Event('change',{bubbles:true}));
+ });
 }
-function decorate(){
-  const table=document.querySelector('#gradebookV33 table');if(!table)return;
-  const snap=window.FairSingGradebookCoreV54?.snapshot?.();if(!snap)return;
-  const hr=table.querySelector('thead tr');
-  if(hr&&!hr.querySelector('.v54head')){const th=document.createElement('th');th.className='v54head';th.textContent='學生管理';hr.appendChild(th)}
-  [...table.querySelectorAll('tbody tr')].forEach((tr,i)=>{
-    if(tr.querySelector('.v54cell')||!snap.students[i])return;
-    const s=snap.students[i],td=document.createElement('td');td.className='v54cell';
-    td.innerHTML='<div class="v54act"><button class="edit">修改</button><button class="del">刪除</button></div>';
-    td.querySelector('.edit').onclick=()=>{const no=(prompt('座號',s.no)||'').trim();if(!no)return;const name=(prompt('姓名',s.name)||'').trim();if(!name)return;window.FairSingGradebookCoreV54.editStudent(s.id,no,name)};
-    td.querySelector('.del').onclick=()=>{if(confirm('刪除 '+s.no+' '+s.name+'？'))window.FairSingGradebookCoreV54.deleteStudent(s.id)};
-    tr.appendChild(td);
-  });
-}
-function boot(){
-  const sel=$('v39ClassSelect');
-  if(sel){
-    const c=sel.cloneNode(true);sel.replaceWith(c);
-    c.addEventListener('change',()=>{if($('gbClass'))$('gbClass').value=c.value;loadCurrent()});
-  }
-  ['gbYear','gbTerm','gbSubject'].forEach(id=>$(id)?.addEventListener('change',()=>setTimeout(loadCurrent,0)));
-  const host=$('gradebookV33');if(host)new MutationObserver(decorate).observe(host,{childList:true,subtree:true});
-  loadCurrent();setTimeout(decorate,30);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,120));else setTimeout(boot,120);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,150));
+else setTimeout(bind,150);
 })();
-</script></body></html>
+</script>
+</body></html>
