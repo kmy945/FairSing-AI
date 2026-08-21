@@ -1660,9 +1660,9 @@ function openWheel(c,count){
    rotation:0,
    spinning:false
  };
- wheelSubtitle.textContent=`${c.name}｜全班 ${c.students.length} 人｜不重複抽籤`;
+ wheelSubtitle.textContent=`${c.name}｜全班 ${c.students.length} 人｜不重複抽籤｜輪盤不顯示座號`;
  wheelResults.innerHTML='';
- wheelMessage.textContent='按下開始；抽過的號碼會自動從輪盤移除。';
+ wheelMessage.textContent='按下開始；輪盤只顯示彩色分區，正式結果會在下方公布。';
  wheelStartBtn.classList.remove('hidden');
  wheelStartBtn.disabled=false;
  wheelStartBtn.textContent=`🎡 開始抽籤（${c.students.length} 人）`;
@@ -1681,10 +1681,10 @@ function buildWheel(){
  const n=items.length,colors=['#ff8da4','#ffd36b','#66d2ca','#78a8ff','#b98cff','#ffad66','#61c58b'];
  wheelDisc.dataset.segmentCount=String(n);
  wheelDisc.style.background=`conic-gradient(${items.map((_,i)=>`${colors[i%colors.length]} ${i*360/n}deg ${(i+1)*360/n}deg`).join(',')})`;
- wheelDisc.innerHTML=items.map((s,i)=>{
-  const angle=(i+.5)*360/n;
-  return `<div class="wheel-label" data-index="${i}" data-no="${esc(s.no)}" data-name="${esc(s.name||'')}" style="transform:rotate(${angle}deg) translate(0,-50%)"><span style="display:inline-block;transform:rotate(90deg)">${esc(s.no)}</span></div>`
- }).join('');
+
+ // v71: intentionally no seat numbers on the wheel.
+ // The wheel is only an animation/randomizer; the official result is shown below.
+ wheelDisc.innerHTML='';
 }
 window.spinNext=()=>{
  if(wheelState.spinning||!wheelState.remaining.length)return;
@@ -4258,7 +4258,7 @@ setTimeout(excelReady,300);
       <div id="wheelDisc" class="wheel-disc"></div>
       <div id="wheelCenter" class="wheel-center">抽</div>
     </div>
-    <div id="wheelMessage" class="wheel-message">準備好了嗎？</div>
+    <div id="wheelMessage" class="wheel-message">準備好了嗎？</div><div id="v71WheelNote" class="muted" style="margin-top:8px">輪盤僅作為隨機動畫；正式抽籤結果以下方公布的「座號＋姓名」為準。</div>
     <div id="wheelResults" class="wheel-results"></div>
     <div class="row" style="justify-content:center;margin-top:14px">
       <button id="wheelStartBtn" class="btn primary" onclick="spinNext()">🎲 開始轉動</button>
