@@ -402,6 +402,27 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 <style id="v49-login-guard-style">
 #login button:disabled{opacity:.65;cursor:wait;pointer-events:none}
 </style>
+
+<style id="recorder-v72-style">
+.recorder-wrap{display:flex;justify-content:center;margin-top:10px}
+#recorderSvg{width:min(220px,72vw);height:470px}
+.rec-hole{fill:#fff;stroke:#654425;stroke-width:4}
+.rec-hole.closed{fill:#2d3d4f}
+.rec-hole.half{fill:url(#recHalfPattern)}
+.rec-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:13px;color:#607387;margin-top:4px}
+.rec-dot{display:inline-block;width:13px;height:13px;border-radius:50%;border:2px solid #654425;margin-right:4px;vertical-align:-2px}
+.rec-closed{background:#2d3d4f}.rec-open{background:#fff}.rec-half{background:linear-gradient(90deg,#2d3d4f 50%,#fff 50%)}
+.rec-staff-box{overflow:auto;margin-top:14px;border:1px solid var(--line);border-radius:18px;background:#fff}
+#recStaff{width:100%;min-width:680px;display:block}
+.rec-practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.rec-practice-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfdff}
+.rec-practice-card h4{margin:0 0 8px}
+.rec-quiz-note{font-size:34px;font-weight:950;color:#173c67;min-height:48px}
+.rec-sequence{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;min-height:46px}
+.rec-seq-chip{padding:8px 11px;border-radius:12px;border:1px solid #cbd8e0;background:#fff;font-weight:850}
+.rec-seq-chip.active{outline:3px solid #65d1c9;background:#eefafa}
+@media(max-width:820px){.rec-practice-grid{grid-template-columns:1fr}}
+</style>
 </head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
@@ -413,6 +434,7 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 <button class="nav" data-p="assess">🎤 Assessment</button>
 <button class="nav" data-p="vocalrange">🎚️ 測試我的音域</button>
 <button class="nav" data-p="knowledge">🎼 音樂知識</button>
+<button class="nav" data-p="recorder">🪈 直笛教學</button>
 <button class="nav" data-p="curriculum">📚 Curriculum</button>
 <button class="nav" data-p="classroom">🎛 課程控制</button>
 <button class="nav" data-p="reports">📊 Reports</button>
@@ -967,6 +989,134 @@ C 大調：無調號　｜　G 大調：F♯　｜　D 大調：F♯、C♯　�
 </div>
 </section>
 
+
+
+<section id="recorder" class="page">
+  <div class="hero">
+    <h1 style="margin:0 0 8px">🪈 直笛教學</h1>
+    <div>看譜、看指法、聽音、節奏與曲譜練習整合在同一頁。</div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card s4">
+      <h3 style="margin-top:0">音高與指法</h3>
+      <label>選擇音高</label>
+      <select id="recNoteSelect"></select>
+
+      <div class="row" style="margin-top:10px">
+        <button id="recPrev" class="btn ghost" type="button">← 前一音</button>
+        <button id="recPlay" class="btn primary" type="button">🔊 播放</button>
+        <button id="recNext" class="btn ghost" type="button">下一音 →</button>
+      </div>
+
+      <div id="recNoteName" style="font-size:42px;font-weight:950;text-align:center;margin:18px 0 8px">C5</div>
+      <div id="recFingeringText" class="muted" style="text-align:center;min-height:44px"></div>
+
+      <div class="recorder-wrap">
+        <svg id="recorderSvg" viewBox="0 0 190 600" role="img" aria-label="直笛指法圖">
+          <defs>
+            <linearGradient id="recBodyGrad" x1="0" x2="1">
+              <stop offset="0" stop-color="#d6a15f"/>
+              <stop offset=".5" stop-color="#f1c985"/>
+              <stop offset="1" stop-color="#bd7e3c"/>
+            </linearGradient>
+          </defs>
+          <rect x="68" y="22" width="54" height="545" rx="24" fill="url(#recBodyGrad)" stroke="#8f5c2d" stroke-width="4"/>
+          <rect x="62" y="8" width="66" height="68" rx="20" fill="#e8bd77" stroke="#8f5c2d" stroke-width="4"/>
+          <rect x="78" y="25" width="34" height="13" rx="5" fill="#5f3d22"/>
+          <circle id="recThumb" cx="48" cy="120" r="16" class="rec-hole"/>
+          <g id="recFrontHoles">
+            <circle data-hole="1" cx="95" cy="145" r="14" class="rec-hole"/>
+            <circle data-hole="2" cx="95" cy="195" r="14" class="rec-hole"/>
+            <circle data-hole="3" cx="95" cy="245" r="14" class="rec-hole"/>
+            <circle data-hole="4" cx="95" cy="315" r="13" class="rec-hole"/>
+            <circle data-hole="5" cx="95" cy="365" r="13" class="rec-hole"/>
+            <circle data-hole="6" cx="95" cy="430" r="11" class="rec-hole"/>
+            <circle data-hole="7" cx="95" cy="475" r="11" class="rec-hole"/>
+          </g>
+          <text x="17" y="125" font-size="18" font-weight="800">後孔</text>
+          <text x="132" y="151" font-size="17">1</text>
+          <text x="132" y="201" font-size="17">2</text>
+          <text x="132" y="251" font-size="17">3</text>
+          <text x="132" y="321" font-size="17">4</text>
+          <text x="132" y="371" font-size="17">5</text>
+          <text x="132" y="436" font-size="17">6</text>
+          <text x="132" y="481" font-size="17">7</text>
+        </svg>
+      </div>
+      <div class="rec-legend">
+        <span><i class="rec-dot rec-closed"></i>按孔</span>
+        <span><i class="rec-dot rec-open"></i>放孔</span>
+        <span><i class="rec-dot rec-half"></i>半孔</span>
+      </div>
+    </div>
+
+    <div class="card s8">
+      <div class="row between">
+        <div>
+          <h3 style="margin:0">五線譜同步</h3>
+          <div class="muted">選擇音高後，譜表與指法一起更新。</div>
+        </div>
+        <div class="row">
+          <button id="recBlankStaff" class="btn ghost" type="button">空白譜表</button>
+          <button id="recShowNote" class="btn ghost" type="button">顯示目前音</button>
+        </div>
+      </div>
+
+      <div class="rec-staff-box">
+        <svg id="recStaff" viewBox="0 0 900 280" aria-label="直笛教學五線譜">
+          <rect x="0" y="0" width="900" height="280" rx="18" fill="#fff"/>
+          <g id="recStaffLines" stroke="#30495d" stroke-width="2">
+            <line x1="80" y1="90" x2="845" y2="90"/>
+            <line x1="80" y1="115" x2="845" y2="115"/>
+            <line x1="80" y1="140" x2="845" y2="140"/>
+            <line x1="80" y1="165" x2="845" y2="165"/>
+            <line x1="80" y1="190" x2="845" y2="190"/>
+          </g>
+          <text x="88" y="181" font-size="82" font-family="serif">𝄞</text>
+          <g id="recNoteLayer"></g>
+        </svg>
+      </div>
+
+      <div class="rec-practice-grid">
+        <div class="rec-practice-card">
+          <h4>① 看譜找指法</h4>
+          <p class="muted">系統隨機出一個音，先看譜，再選出正確音名。</p>
+          <div id="recQuizPrompt" class="rec-quiz-note">—</div>
+          <div id="recQuizChoices" class="row"></div>
+          <div id="recQuizFeedback" class="muted"></div>
+          <button id="recQuizNew" class="btn primary" type="button">出新題</button>
+        </div>
+
+        <div class="rec-practice-card">
+          <h4>② 節奏練習</h4>
+          <label>BPM</label>
+          <input id="recBpm" type="range" min="50" max="160" value="80"/>
+          <div class="row between"><span id="recBpmText">80 BPM</span><button id="recMetro" class="btn ghost" type="button">▶ 節拍器</button></div>
+          <div id="recBeatDots" class="beat-dots" style="margin:12px 0"></div>
+          <div class="muted">可先用節拍器建立穩定拍點，再配合指法練習。</div>
+        </div>
+      </div>
+
+      <div class="rec-practice-card" style="margin-top:12px">
+        <div class="row between">
+          <div>
+            <h4 style="margin:0">③ 曲譜練習</h4>
+            <div class="muted">可自行建立音列，逐音播放並同步顯示。</div>
+          </div>
+          <button id="recClearSeq" class="btn ghost" type="button">清除</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <select id="recSeqNote" style="max-width:180px"></select>
+          <button id="recAddSeq" class="btn ghost" type="button">＋加入音符</button>
+          <button id="recPlaySeq" class="btn primary" type="button">▶ 全曲播放</button>
+          <button id="recStopSeq" class="btn ghost" type="button">■ 停止</button>
+        </div>
+        <div id="recSequence" class="rec-sequence"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="curriculum" class="page">
  <div class="row between">
@@ -6591,6 +6741,181 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,100));
 else setTimeout(bind,100);
+})();
+</script>
+
+<script id="recorder-v72-script">
+(function(){
+const $=id=>document.getElementById(id);
+
+/*
+  Fingerings follow the previously confirmed project mappings where available.
+  Hole 0 = thumb/back hole. Values: 1 closed, 0 open, .5 half-hole.
+*/
+const NOTES=[
+ {n:'F4',m:65.41,f:[1,1,1,1,1,1,1,1],txt:'全按'},
+ {n:'G4',m:73.42,f:[1,1,1,1,1,1,1,0],txt:'0～6 按，7 放'},
+ {n:'A4',m:82.41,f:[1,1,1,1,1,1,0,0],txt:'0～5 按，6、7 放'},
+ {n:'B♭4',m:87.31,f:[1,1,1,1,1,1,0,1],txt:'Baroque：0～4、5、7 按，6 放'},
+ {n:'B4',m:92.50,f:[1,1,1,1,1,0,1,1],txt:'Baroque：0～4、6、7 按，5 放'},
+ {n:'C5',m:98.00,f:[.5,1,1,1,0,0,0,0],txt:'後孔半孔＋前 1～3 孔'},
+ {n:'D5',m:110.00,f:[.5,1,1,0,0,0,0,0],txt:'後孔半孔＋前 1、2 孔'},
+ {n:'E5',m:123.47,f:[.5,1,0,0,0,0,0,0],txt:'後孔半孔＋前 1 孔'},
+ {n:'F5',m:130.81,f:[.5,1,1,1,1,0,1,1],txt:'高音指法'},
+ {n:'F♯5',m:138.59,f:[.5,1,1,1,0,1,1,0],txt:'升 F 指法'},
+ {n:'G5',m:146.83,f:[.5,1,1,1,0,0,0,0],txt:'高音 G 指法'},
+ {n:'A5',m:164.81,f:[.5,1,1,0,0,0,0,0],txt:'高音 A 指法'}
+];
+
+let current=5,showNote=true,audioCtx=null,metroTimer=null,metroBeat=0,seq=[],seqTimer=null;
+
+function fillSelects(){
+ const opts=NOTES.map((x,i)=>new Option(x.n,String(i)));
+ ['recNoteSelect','recSeqNote'].forEach(id=>{
+   const s=$(id); if(!s)return;
+   s.innerHTML='';
+   NOTES.forEach((x,i)=>s.add(new Option(x.n,String(i))));
+ });
+ $('recNoteSelect').value=String(current);
+ $('recSeqNote').value=String(current);
+}
+function setHole(el,v){
+ el.classList.remove('closed','half');
+ if(v===1)el.classList.add('closed');
+ else if(v===.5)el.classList.add('half');
+}
+function renderFingering(){
+ const note=NOTES[current];
+ $('recNoteName').textContent=note.n;
+ $('recFingeringText').textContent=note.txt;
+ setHole($('recThumb'),note.f[0]);
+ [...document.querySelectorAll('#recFrontHoles [data-hole]')].forEach(el=>{
+   setHole(el,note.f[Number(el.dataset.hole)]);
+ });
+}
+function staffY(name){
+ const order=['C4','D4','E4','F4','G4','A4','B♭4','B4','C5','D5','E5','F5','F♯5','G5','A5'];
+ const idx=order.indexOf(name);
+ return 225-idx*12.5;
+}
+function renderStaff(){
+ const g=$('recNoteLayer');
+ g.innerHTML='';
+ if(!showNote)return;
+ const note=NOTES[current],y=staffY(note.n);
+ const accidental=note.n.includes('♭')?'♭':note.n.includes('♯')?'♯':'';
+ if(y>190||y<90){
+   for(let ly=215;ly>=65;ly-=25){
+     if((y>190&&ly>=190&&ly<=y+8)||(y<90&&ly<=90&&ly>=y-8)){
+       const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+       l.setAttribute('x1','340');l.setAttribute('x2','450');l.setAttribute('y1',ly);l.setAttribute('y2',ly);
+       l.setAttribute('stroke','#30495d');l.setAttribute('stroke-width','2');g.appendChild(l);
+     }
+   }
+ }
+ if(accidental){
+   const a=document.createElementNS('http://www.w3.org/2000/svg','text');
+   a.setAttribute('x','342');a.setAttribute('y',String(y+10));a.setAttribute('font-size','34');
+   a.textContent=accidental;g.appendChild(a);
+ }
+ const head=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+ head.setAttribute('cx','405');head.setAttribute('cy',String(y));head.setAttribute('rx','15');head.setAttribute('ry','10');
+ head.setAttribute('transform',`rotate(-18 405 ${y})`);head.setAttribute('fill','#173c67');g.appendChild(head);
+
+ const stem=document.createElementNS('http://www.w3.org/2000/svg','line');
+ const stemDown=y<140;
+ stem.setAttribute('x1',stemDown?'390':'420');
+ stem.setAttribute('x2',stemDown?'390':'420');
+ stem.setAttribute('y1',String(y));
+ stem.setAttribute('y2',String(stemDown?y+62:y-62));
+ stem.setAttribute('stroke','#173c67');stem.setAttribute('stroke-width','4');g.appendChild(stem);
+
+ const lab=document.createElementNS('http://www.w3.org/2000/svg','text');
+ lab.setAttribute('x','475');lab.setAttribute('y',String(y+8));lab.setAttribute('font-size','26');lab.setAttribute('font-weight','800');
+ lab.setAttribute('fill','#173c67');lab.textContent=note.n;g.appendChild(lab);
+}
+function renderAll(){renderFingering();renderStaff()}
+function tone(freq,dur=.6){
+ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+ const o=audioCtx.createOscillator(),gain=audioCtx.createGain();
+ o.type='sine';o.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioCtx.currentTime);
+ gain.gain.exponentialRampToValueAtTime(.22,audioCtx.currentTime+.02);
+ gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);
+ o.connect(gain).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur+.03);
+}
+function change(i){
+ current=Math.max(0,Math.min(NOTES.length-1,i));
+ $('recNoteSelect').value=String(current);renderAll();
+}
+function quiz(){
+ const answer=Math.floor(Math.random()*NOTES.length);
+ current=answer;showNote=true;renderStaff();renderFingering();
+ $('recQuizPrompt').textContent='請看上方譜例判斷音名';
+ const pool=[answer];
+ while(pool.length<4){
+   const x=Math.floor(Math.random()*NOTES.length);
+   if(!pool.includes(x))pool.push(x);
+ }
+ pool.sort(()=>Math.random()-.5);
+ const box=$('recQuizChoices');box.innerHTML='';
+ pool.forEach(i=>{
+   const b=document.createElement('button');b.className='btn ghost';b.textContent=NOTES[i].n;
+   b.onclick=()=>{$('recQuizFeedback').textContent=i===answer?'✅ 正確！':'再想想看。';};
+   box.appendChild(b);
+ });
+ $('recQuizFeedback').textContent='';
+}
+function drawBeats(){
+ const box=$('recBeatDots');box.innerHTML='';
+ for(let i=0;i<4;i++){const d=document.createElement('span');d.className='beat-dot';box.appendChild(d)}
+}
+function metroStart(){
+ if(metroTimer){
+   clearInterval(metroTimer);metroTimer=null;$('recMetro').textContent='▶ 節拍器';
+   [...$('recBeatDots').children].forEach(x=>x.classList.remove('active'));return;
+ }
+ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+ const tick=()=>{
+   const dots=[...$('recBeatDots').children];
+   dots.forEach(x=>x.classList.remove('active'));
+   dots[metroBeat%4]?.classList.add('active');
+   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+   o.frequency.value=metroBeat%4===0?1100:800;g.gain.value=.07;o.connect(g).connect(audioCtx.destination);
+   o.start();o.stop(audioCtx.currentTime+.05);metroBeat++;
+ };
+ tick();metroTimer=setInterval(tick,60000/Number($('recBpm').value));
+ $('recMetro').textContent='■ 停止';
+}
+function renderSeq(active=-1){
+ const box=$('recSequence');box.innerHTML='';
+ seq.forEach((i,k)=>{
+   const d=document.createElement('div');d.className='rec-seq-chip'+(k===active?' active':'');d.textContent=NOTES[i].n;
+   d.onclick=()=>change(i);box.appendChild(d);
+ });
+}
+function stopSeq(){if(seqTimer){clearTimeout(seqTimer);seqTimer=null}renderSeq()}
+function playSeq(k=0){
+ if(k>=seq.length){seqTimer=null;renderSeq();return}
+ const i=seq[k];change(i);renderSeq(k);tone(NOTES[i].m,.45);
+ seqTimer=setTimeout(()=>playSeq(k+1),600);
+}
+function bind(){
+ fillSelects();drawBeats();renderAll();
+ $('recNoteSelect').onchange=e=>change(Number(e.target.value));
+ $('recPrev').onclick=()=>change(current-1);
+ $('recNext').onclick=()=>change(current+1);
+ $('recPlay').onclick=()=>tone(NOTES[current].m);
+ $('recBlankStaff').onclick=()=>{showNote=false;renderStaff()};
+ $('recShowNote').onclick=()=>{showNote=true;renderStaff()};
+ $('recQuizNew').onclick=quiz;
+ $('recBpm').oninput=e=>{$('recBpmText').textContent=e.target.value+' BPM';if(metroTimer){metroStart();metroStart()}};
+ $('recMetro').onclick=metroStart;
+ $('recAddSeq').onclick=()=>{seq.push(Number($('recSeqNote').value));renderSeq()};
+ $('recClearSeq').onclick=()=>{stopSeq();seq=[];renderSeq()};
+ $('recPlaySeq').onclick=()=>{stopSeq();if(seq.length)playSeq(0)};
+ $('recStopSeq').onclick=stopSeq;
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
 </body></html>
