@@ -1293,18 +1293,39 @@ window.FairSingCloudV45={
 const D={classes:[],templates:[{id:'v',name:'伴奏歌唱',type:'vocal',ai:['音準','節奏','穩定度'],teacher:['音色','情感','台風']},{id:'a',name:'清唱',type:'acapella',ai:['音準','節奏','穩定度','音域'],teacher:['咬字','情感','自信']},{id:'f',name:'自由演唱',type:'free',ai:['音準','穩定度','音域'],teacher:['音樂性','表現力','創意']},{id:'r',name:'直笛獨奏',type:'recorder',ai:['音準','節奏','音符正確率','音長'],teacher:['音色','運舌','換氣']},{id:'p',name:'節奏打擊',type:'percussion',ai:['拍點準確度','節奏正確率','速度穩定度','漏拍與多拍'],teacher:['姿勢','協調性','力度控制','完整度']},{id:'ci',name:'自訂樂器',type:'customInstrument',instrument:'其他',useMetronome:true,needBacking:false,useScoreReference:false,ai:['音準','節奏','穩定度'],teacher:['音色','技巧','完整度']}],orders:{},records:[],session:null,draft:null,settings:{sw:80,tw:20},metronome:{bpm:80,beats:4,countIn:1,continue:true},
 curriculumMeta:{courseName:'音樂',publisher:'康軒',semester:'115學年度上學期'},
 curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.1.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
+
+function normalizeRosterV58(students){
+  const src=Array.isArray(students)?students:[];
+  const valid=[],orphans=[],used=new Set();
+  src.forEach((s,i)=>{
+    const name=String(s?.name??'').trim();
+    let no=String(s?.no??'').trim();
+    const id=s?.id||crypto.randomUUID();
+    if(!name){orphans.push({id,no,name,raw:s});return}
+    if(!no || used.has(no)){
+      let n=1;
+      while(used.has(String(n).padStart(2,'0')))n++;
+      no=String(n).padStart(2,'0');
+    }
+    used.add(no);
+    valid.push({id,no,name});
+  });
+  valid.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+  return {valid,orphans};
+}
 window.FairSingRosterBridgeV57={
   listClasses(){
-    return (S.classes||[]).map(c=>({
-      id:c.id,name:String(c.name||'').trim(),
-      students:(c.students||[]).map(s=>({id:s.id,no:String(s.no||'').trim(),name:String(s.name||'').trim()}))
-    }));
+    return (S.classes||[]).map(c=>{
+      const r=normalizeRosterV58(c.students||[]);
+      return {id:c.id,name:String(c.name||'').trim(),students:r.valid.map(s=>({...s}))};
+    });
   },
   getClassByName(name){
     const n=String(name||'').trim();
     const c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
     if(!c)return null;
-    return {id:c.id,name:c.name,students:(c.students||[]).map(s=>({...s}))};
+    const r=normalizeRosterV58(c.students||[]);
+    return {id:c.id,name:c.name,students:r.valid.map(s=>({...s}))};
   },
   ensureClass(name){
     const n=String(name||'').trim();
@@ -1327,12 +1348,15 @@ window.FairSingRosterBridgeV57={
       c={id:crypto.randomUUID(),name:n,students:[]};
       S.classes.push(c);
     }
-    c.students=(students||[]).map((s,i)=>({
-      id:s.id||crypto.randomUUID(),
-      no:String(s.no||String(i+1).padStart(2,'0')).trim(),
-      name:String(s.name||'').trim()
-    })).filter(s=>s.name);
-    c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    const rr=normalizeRosterV58(students||[]);
+    if(rr.orphans.length){
+      try{
+        const bk=JSON.parse(localStorage.getItem('FairSingRosterOrphansV58')||'{}');
+        bk[n]=rr.orphans;
+        localStorage.setItem('FairSingRosterOrphansV58',JSON.stringify(bk));
+      }catch(e){}
+    }
+    c.students=rr.valid;
     try{save()}catch(e){}
     try{render()}catch(e){}
     window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}));
@@ -1387,6 +1411,23 @@ window.FairSingRosterBridgeV57={
     try{render()}catch(e){}
     window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
     return true;
+  },
+  repairClass(className){
+    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    if(!c)return {total:0,removed:0};
+    const rr=normalizeRosterV58(c.students||[]);
+    if(rr.orphans.length){
+      try{
+        const bk=JSON.parse(localStorage.getItem('FairSingRosterOrphansV58')||'{}');
+        bk[String(className||'').trim()]=rr.orphans;
+        localStorage.setItem('FairSingRosterOrphansV58',JSON.stringify(bk));
+      }catch(e){}
+    }
+    c.students=rr.valid;
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
+    return {total:rr.valid.length,removed:rr.orphans.length};
   }
 };
 
@@ -4901,7 +4942,7 @@ window.mergeTiedPlaybackV27=function(score){
 <button id="v40ExportExcel" class="excel" type="button">📗 Excel 匯出成績</button>
 <input id="v40File" type="file" accept=".xlsx,.xls,.csv" hidden>
 </div><div class="gb-actions">
-  <button id="gbAddStudent" type="button">＋新增學生</button><button id="v46BatchStudents" type="button">👥 批次輸入學生</button>
+  <button id="gbAddStudent" type="button">＋新增學生</button><button id="v58RepairRoster" type="button">🧹 修復名冊</button><button id="v46BatchStudents" type="button">👥 批次輸入學生</button>
   <button id="gbAddColumn" type="button">＋新增項目</button>
   <button id="gbTemplate" type="button">套用科目模板</button>
   <button id="gbSave" type="button">💾 儲存</button>
@@ -5181,7 +5222,7 @@ window.mergeTiedPlaybackV27=function(score){
    <label>成績類別
     <select id="gbItemCategory"><option value="daily">平時成績</option><option value="exam">定期成績</option></select>
    </label>
-   <label>項目類型
+   <label>評量類型（作業／學習單／段考／實作…）
     <select id="gbItemType">
      <option>作業</option><option>學習單</option><option>小考</option><option>課堂表現</option>
      <option>視唱</option><option>聽寫</option><option>樂理</option><option>段考</option>
@@ -5386,7 +5427,7 @@ $('v40File').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{awa
 <label class="v42field">成績性質
 <select id="v42Cat"><option value="daily">平時成績</option><option value="exam">定期成績</option></select>
 </label>
-<label class="v42field">項目類型
+<label class="v42field">評量類型（作業／學習單／段考／實作…）
 <select id="v42Type"></select>
 </label>
 <label class="v42field v42wide">項目名稱
@@ -5873,6 +5914,75 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
 else boot();
+})();
+</script>
+
+<script id="v58-roster-repair-ui">
+(function(){
+const $=id=>document.getElementById(id);
+function boot(){
+ const b=$('v58RepairRoster'); if(!b)return;
+ b.onclick=()=>{
+   const cls=$('v39ClassSelect')?.value||$('gbClass')?.value||'';
+   const bridge=window.FairSingRosterBridgeV57;
+   if(!bridge)return alert('班級名冊尚未載入。');
+   if(!confirm('修復「'+cls+'」名冊？\n會補齊缺少座號、排除空白學生；原始殘缺項目會先保留備份。'))return;
+   const r=bridge.repairClass(cls);
+   window.FairSingGradebookCoreV53?.reload?.();
+   alert('名冊修復完成。\n目前有效學生：'+r.total+' 人\n隔離空白／殘缺項目：'+r.removed+' 筆');
+ };
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+
+<script id="v59-item-type-fix">
+(function(){
+const $=id=>document.getElementById(id);
+const TYPESETS={
+ daily:['作業','學習單','平時測驗','小考','課堂表現','練習紀錄','視唱','聽寫','樂理練習','報告','其他'],
+ exam:['段考','實作','術科測驗','期中評量','期末評量','視唱測驗','聽寫測驗','樂理測驗','成果發表','其他']
+};
+function fill(selectId,catId){
+ const s=$(selectId),c=$(catId); if(!s||!c)return;
+ const old=s.value;
+ s.innerHTML='';
+ TYPESETS[c.value].forEach(x=>s.add(new Option(x,x)));
+ if([...s.options].some(o=>o.value===old))s.value=old;
+}
+function boot(){
+ fill('gbItemType','gbItemCategory');
+ fill('v42Type','v42Cat');
+ $('gbItemCategory')?.addEventListener('change',()=>fill('gbItemType','gbItemCategory'));
+ $('v42Cat')?.addEventListener('change',()=>fill('v42Type','v42Cat'));
+
+ // When type changes, help set category correctly.
+ $('gbItemType')?.addEventListener('change',()=>{
+   const t=$('gbItemType').value;
+   if(TYPESETS.exam.includes(t))$('gbItemCategory').value='exam';
+   else $('gbItemCategory').value='daily';
+ });
+ $('v42Type')?.addEventListener('change',()=>{
+   const t=$('v42Type').value;
+   if(TYPESETS.exam.includes(t))$('v42Cat').value='exam';
+   else $('v42Cat').value='daily';
+ });
+
+ // Ensure stored columns always have a visible type.
+ const oldAdd=window.gbV34AddItem;
+ if(typeof oldAdd==='function'&&!oldAdd.__v59){
+   const wrapped=function(meta){
+     meta=meta||{};
+     if(!meta.type){
+       meta.type=(meta.category==='exam'?'段考':'其他');
+     }
+     return oldAdd(meta);
+   };
+   wrapped.__v59=true;
+   window.gbV34AddItem=wrapped;
+ }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 </body></html>
