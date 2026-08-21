@@ -5304,6 +5304,30 @@ window.mergeTiedPlaybackV27=function(score){
    save:()=>saveAll()
  };
  window.FairSingGradebookCoreV53={
+    addAssessmentItem:(meta)=>{
+      const name=String(meta?.name||'').trim();
+      if(!name)throw new Error('請輸入項目名稱');
+      const category=meta?.category==='exam'?'exam':'daily';
+      const type=String(meta?.type||'其他').trim()||'其他';
+      const max=Number(meta?.max||100);
+      const weight=Number(meta?.weight||1);
+      const c={
+        id:'c'+Date.now()+Math.random().toString(36).slice(2,7),
+        name,
+        category,
+        type,
+        max:Number.isFinite(max)&&max>0?max:100,
+        weight:Number.isFinite(weight)&&weight>0?weight:1,
+        date:String(meta?.date||'').trim(),
+        special:String(meta?.special||'一般').trim(),
+        note:String(meta?.note||'').trim()
+      };
+      state.columns.push(c);
+      saveAll();
+      render();
+      return c;
+    },
+
    addStudentsBatch:(rows)=>{
       const bridge=window.FairSingRosterBridgeV57;
       if(bridge){
@@ -6140,14 +6164,25 @@ function refreshGradebookClasses(prefer){
   const sel=$('v39ClassSelect');
   const hidden=$('gbClass');
   if(!bridge||!sel||!hidden)return;
-  const names=bridge.listClasses().map(c=>c.name).filter(Boolean);
-  const current=prefer||sel.value||hidden.value||names[0]||'706';
+
+  bridge.dedupeClasses?.();
+
+  const raw=bridge.listClasses?.()||[];
+  const names=[...new Set(
+    raw.map(c=>String(c?.name||'').trim()).filter(Boolean)
+  )].sort((a,b)=>a.localeCompare(b,'zh-Hant',{numeric:true}));
+
+  const wanted=String(prefer||sel.value||hidden.value||'').trim();
+  const current=names.includes(wanted) ? wanted : (names[0]||wanted||'706');
+
   sel.innerHTML='';
   names.forEach(n=>sel.add(new Option(n,n)));
-  if(!names.includes(current) && current){
-    bridge.ensureClass(current);
+
+  if(!names.length && current){
+    bridge.ensureClass?.(current);
     sel.add(new Option(current,current));
   }
+
   sel.value=current;
   hidden.value=current;
 }
@@ -6155,6 +6190,7 @@ function reloadGradebook(){
   window.FairSingGradebookCoreV53?.reload?.();
 }
 function boot(){
+  window.FairSingRosterBridgeV57?.dedupeClasses?.();
   refreshGradebookClasses();
   window.addEventListener('fairsing-roster-changed',e=>{
     const current=$('v39ClassSelect')?.value||$('gbClass')?.value||'';
@@ -6357,6 +6393,29 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
 else boot();
+})();
+</script>
+
+<script id="v65-combined-fix">
+(function(){
+const $=id=>document.getElementById(id);
+function cleanClassOptions(){
+  const sel=$('v39ClassSelect'); if(!sel)return;
+  const seen=new Set();
+  [...sel.options].forEach(o=>{
+    const v=String(o.value||o.textContent||'').trim();
+    if(!v || seen.has(v))o.remove(); else seen.add(v);
+  });
+}
+function refresh(){
+  try{
+    window.FairSingRosterBridgeV57?.dedupeClasses?.();
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed'));
+  }catch(e){}
+  setTimeout(cleanClassOptions,100);
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,700));
+window.addEventListener('fairsing-roster-changed',()=>setTimeout(cleanClassOptions,120));
 })();
 </script>
 </body></html>
