@@ -1679,10 +1679,11 @@ function openWheel(c,count){
 function buildWheel(){
  const items=wheelState.remaining.length?wheelState.remaining:[{no:'✓',name:'完成'}];
  const n=items.length,colors=['#ff8da4','#ffd36b','#66d2ca','#78a8ff','#b98cff','#ffad66','#61c58b'];
+ wheelDisc.dataset.segmentCount=String(n);
  wheelDisc.style.background=`conic-gradient(${items.map((_,i)=>`${colors[i%colors.length]} ${i*360/n}deg ${(i+1)*360/n}deg`).join(',')})`;
  wheelDisc.innerHTML=items.map((s,i)=>{
   const angle=(i+.5)*360/n;
-  return `<div class="wheel-label" style="transform:rotate(${angle}deg) translate(0,-50%)"><span style="display:inline-block;transform:rotate(90deg)">${esc(s.no)}</span></div>`
+  return `<div class="wheel-label" data-index="${i}" data-no="${esc(s.no)}" data-name="${esc(s.name||'')}" style="transform:rotate(${angle}deg) translate(0,-50%)"><span style="display:inline-block;transform:rotate(90deg)">${esc(s.no)}</span></div>`
  }).join('');
 }
 window.spinNext=()=>{
@@ -1692,67 +1693,92 @@ window.spinNext=()=>{
  wheelStartBtn.disabled=true;
  wheelMessage.textContent='輪盤高速旋轉中……';
 
- // Winner is chosen exactly once from REMAINING students only.
- const winnerIndex=Math.floor(Math.random()*wheelState.remaining.length);
- const winner=wheelState.remaining[winnerIndex];
- const segment=360/wheelState.remaining.length;
+ /*
+   v70 principle:
+   1. Choose the target student once from the current REMAINING array.
+   2. Rotate that exact segment centre to the fixed top pointer.
+   3. After animation, compute which segment is physically under the pointer
+      from the final wheel rotation.
+   4. Announce/remove THAT segment. Therefore visual pointer and published
+      result can never diverge.
+ */
+ const n=wheelState.remaining.length;
+ const plannedIndex=Math.floor(Math.random()*n);
+ const segment=360/n;
+ const segmentCenter=(plannedIndex+.5)*segment;
 
- // Reset only the visual rotation coordinate so the pointer geometry is accurate.
- // This does NOT reset the draw pool, drawn history, or remaining students.
+ // CSS conic-gradient 0deg is at 12 o'clock; fixed pointer is also 12 o'clock.
+ // A positive CSS rotation is clockwise, so target rotation is -segmentCenter mod 360.
+ const landing=(360-segmentCenter)%360;
+ const turns=5;
+ const target=turns*360+landing;
+
  wheelDisc.style.transition='none';
  wheelDisc.style.transform='rotate(0deg)';
  void wheelDisc.offsetWidth;
 
- const target=360*5+(360-(winnerIndex+.5)*segment);
  wheelState.rotation=target;
  wheelDisc.style.transition='';
  wheelDisc.style.transform=`rotate(${target}deg)`;
 
  setTimeout(()=>{
-  // Remove the exact winner from the remaining pool.
-  // Once removed, this seat number cannot be drawn again until a full reset.
-  const removed=wheelState.remaining.splice(winnerIndex,1)[0];
-  wheelState.drawn.push(removed);
+   // Read the ACTUAL segment under the top pointer from the final rotation.
+   const normalized=((wheelState.rotation%360)+360)%360;
 
-  wheelState.spinning=false;
-  wheelStartBtn.disabled=false;
+   // Segment i centre satisfies: centre + normalized == 0 mod 360.
+   // Convert pointer direction back into original wheel coordinates.
+   const pointerAngle=((360-normalized)%360);
+   let actualIndex=Math.floor(pointerAngle/segment);
+   if(actualIndex<0)actualIndex=0;
+   if(actualIndex>=wheelState.remaining.length)actualIndex=wheelState.remaining.length-1;
 
-  const chip=document.createElement('div');
-  chip.className='wheel-chip';
-  chip.textContent=`${wheelState.drawn.length}. ${removed.no}號 ${removed.name||''}`;
-  wheelResults.appendChild(chip);
+   // For exact boundary safety, use nearest centre rather than boundary floor.
+   let bestIndex=actualIndex,bestDist=999;
+   for(let i=0;i<wheelState.remaining.length;i++){
+     const center=(i+.5)*segment;
+     let d=Math.abs(center-pointerAngle);
+     d=Math.min(d,360-d);
+     if(d<bestDist){bestDist=d;bestIndex=i}
+   }
+   actualIndex=bestIndex;
 
-  wheelMessage.textContent=`🎉 第 ${wheelState.drawn.length} 位：${removed.no}號 ${removed.name||''}`;
+   const removed=wheelState.remaining.splice(actualIndex,1)[0];
+   wheelState.drawn.push(removed);
 
-  // Redraw wheel using only students who have NOT been drawn.
-  wheelDisc.style.transition='none';
-  wheelDisc.style.transform='rotate(0deg)';
-  wheelState.rotation=0;
-  buildWheel();
-  void wheelDisc.offsetWidth;
-  wheelDisc.style.transition='';
+   wheelState.spinning=false;
+   wheelStartBtn.disabled=false;
 
-  if(wheelState.remaining.length===0){
-    // All students have now been drawn exactly once.
-    wheelStartBtn.classList.add('hidden');
-    wheelApplyBtn.classList.remove('hidden');
-    wheelAgainBtn.classList.remove('hidden');
-    wheelMessage.textContent='🎊 全班都已抽完，所有號碼皆已抽過一次！';
+   const chip=document.createElement('div');
+   chip.className='wheel-chip';
+   chip.textContent=`${wheelState.drawn.length}. ${removed.no}號 ${removed.name||''}`;
+   wheelResults.appendChild(chip);
+   wheelMessage.textContent=`🎉 第 ${wheelState.drawn.length} 位：${removed.no}號 ${removed.name||''}`;
 
-    setTimeout(()=>{
-      const reset=confirm(
-        `全班 ${wheelState.drawn.length} 人都已抽完。\n\n要重新放回所有號碼，開始新一輪嗎？`
-      );
-      if(reset){
-        const c=S.classes.find(x=>x.id===wheelState.classId);
-        if(c)openWheel(c,c.students.length);
-      }
-      // If user chooses Cancel/No, preserve the complete drawn history and results.
-    },250);
-  }else{
-    wheelStartBtn.classList.remove('hidden');
-    wheelStartBtn.textContent=`🎡 抽下一位（剩 ${wheelState.remaining.length} 人）`;
-  }
+   // Reset only the visual coordinate before rebuilding remaining segments.
+   wheelDisc.style.transition='none';
+   wheelDisc.style.transform='rotate(0deg)';
+   wheelState.rotation=0;
+   buildWheel();
+   void wheelDisc.offsetWidth;
+   wheelDisc.style.transition='';
+
+   if(wheelState.remaining.length===0){
+     wheelStartBtn.classList.add('hidden');
+     wheelApplyBtn.classList.remove('hidden');
+     wheelAgainBtn.classList.remove('hidden');
+     wheelMessage.textContent='🎊 全班都已抽完，所有號碼皆已抽過一次！';
+
+     setTimeout(()=>{
+       const reset=confirm(`全班 ${wheelState.drawn.length} 人都已抽完。\n\n要重新放回所有號碼，開始新一輪嗎？`);
+       if(reset){
+         const c=S.classes.find(x=>x.id===wheelState.classId);
+         if(c)openWheel(c,c.students.length);
+       }
+     },250);
+   }else{
+     wheelStartBtn.classList.remove('hidden');
+     wheelStartBtn.textContent=`🎡 抽下一位（剩 ${wheelState.remaining.length} 人）`;
+   }
  },3900);
 };
 window.applyWheelOrder=()=>{
