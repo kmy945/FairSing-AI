@@ -1770,7 +1770,7 @@ window.deleteMaterial=id=>{S.materials=S.materials.filter(x=>x.id!==id);save()};
 const dayNames=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
 window.openScheduleModal=()=>modalOpen('新增每週課程',`<label>星期</label><select id="scDay"><option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option></select><label>節次</label><input id="scPeriod" type="number" min="1" max="12"><label>開始時間</label><input id="scTime" type="time"><label>名單／班級</label><select id="scRoster"><option value="">未指定</option>${S.classes.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><label>課程名稱</label><input id="scCourse" value="音樂"><label>教室</label><input id="scRoom"><label>預設評量模板</label><select id="scTemplate"><option value="">未指定</option>${S.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select><button class="btn primary" style="margin-top:12px" onclick="addSchedule()">儲存</button>`);
 window.addSchedule=()=>{S.schedule.push({id:crypto.randomUUID(),day:+scDay.value,period:+scPeriod.value,time:scTime.value,rosterId:scRoster.value,course:scCourse.value.trim(),room:scRoom.value.trim(),templateId:scTemplate.value});closeModal();save()};
-window.openEventModal=()=>modalOpen('新增日曆事件',`<label>日期</label><input id="evDate" type="date"><label>標題</label><input id="evTitle"><label>類型</label><select id="evType"><option>評量</option><option>課程</option><option>社團</option><option>比賽</option><option>音樂會</option><option>提醒</option></select><label>名單</label><select id="evRoster"><option value="">未指定</option>${S.classes.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><label>評量模板</label><select id="evTemplate"><option value="">未指定</option>${S.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select><button class="btn primary" style="margin-top:12px" onclick="addEvent()">儲存</button>`);
+window.openEventModal=()=>modalOpen('新增日曆事件',`<label>日期（可之後補）</label><input id="evDate" type="date"><label>標題</label><input id="evTitle"><label>類型</label><select id="evType"><option>評量</option><option>課程</option><option>社團</option><option>比賽</option><option>音樂會</option><option>提醒</option></select><label>名單</label><select id="evRoster"><option value="">未指定</option>${S.classes.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><label>評量模板</label><select id="evTemplate"><option value="">未指定</option>${S.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select><button class="btn primary" style="margin-top:12px" onclick="addEvent()">儲存</button>`);
 window.addEvent=()=>{if(!evDate.value||!evTitle.value.trim())return;S.calendarEvents.push({id:crypto.randomUUID(),date:evDate.value,title:evTitle.value.trim(),type:evType.value,rosterId:evRoster.value,templateId:evTemplate.value});closeModal();save()};
 function renderSchedule(){if(!window.weeklySchedule)return;ensurePhase2();let periods=[...new Set(S.schedule.map(x=>x.period))].sort((a,b)=>a-b);if(!periods.length)periods=[1,2,3,4,5,6,7];let out='<div class="schedule-cell schedule-head">節次</div>'+[1,2,3,4,5].map(d=>`<div class="schedule-cell schedule-head">${dayNames[d]}</div>`).join('');for(let per of periods){out+=`<div class="schedule-cell schedule-head">第 ${per} 節</div>`;for(let d=1;d<=5;d++){let x=S.schedule.find(s=>s.day===d&&s.period===per),c=x&&S.classes.find(c=>c.id===x.rosterId);out+=`<div class="schedule-cell">${x?`<b>${esc(c?.name||x.course||'課程')}</b><br><small>${esc(x.time||'')} ${esc(x.room||'')}</small>`:''}</div>`}}weeklySchedule.innerHTML=out;let today=new Date(),d=today.getDay(),items=S.schedule.filter(x=>x.day===d).sort((a,b)=>a.period-b.period);todaySchedule.innerHTML=items.length?items.map(x=>{let c=S.classes.find(c=>c.id===x.rosterId),t=S.templates.find(t=>t.id===x.templateId);return `<div class="today-item"><div><b>${esc(x.time||'第'+x.period+'節')}｜${esc(c?.name||x.course)}</b><br><span class="muted">${esc(x.course)} ${esc(x.room||'')} ${t?'｜'+esc(t.name):''}</span></div><button class="btn primary" onclick="startScheduledClass('${x.id}')">開始上課</button></div>`}).join(''):'<div class="muted">今天沒有設定課程</div>';renderCalendar()}
 window.startScheduledClass=id=>{let x=S.schedule.find(s=>s.id===id);if(!x)return;go('assess');setTimeout(()=>{if(x.rosterId)assessClass.value=x.rosterId;if(x.templateId)assessTemplate.value=x.templateId;renderSeats()},120)};
@@ -5710,7 +5710,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </label>
 <label class="v42field">滿分<input id="v42Max" type="number" min="1" value="100"></label>
 <label class="v42field">權重<input id="v42Weight" type="number" min="0.01" step="0.01" value="1"></label>
-<label class="v42field">日期<input id="v42Date" type="date"></label>
+<label class="v42field">日期（可之後補）<input id="v42Date" type="date"></label>
 <label class="v42field">特殊項目
 <select id="v42Special"><option value="">一般</option><option value="bonus">加分</option><option value="deduct">扣分</option></select>
 </label>
@@ -5744,7 +5744,7 @@ function bind(){
  $('v42OK').onclick=()=>{
    const name=$('v42Name').value.trim();
    if(!name)return alert('請輸入項目名稱。');
-   if(!window.FairSingGB42)return alert('成績管理尚未完成載入，請重新開啟成績管理。');
+   if(!window.FairSingGB42)return alert('成績管理核心尚未載入，請重新整理頁面後再試。');
    window.FairSingGB42.addColumnDirect({
      name,category:$('v42Cat').value,type:$('v42Type').value,
      max:$('v42Max').value,weight:$('v42Weight').value,date:$('v42Date').value,
@@ -6416,6 +6416,54 @@ function refresh(){
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,700));
 window.addEventListener('fairsing-roster-changed',()=>setTimeout(cleanClassOptions,120));
+})();
+</script>
+
+<script id="v66-item-create-fix">
+(function(){
+const $=id=>document.getElementById(id);
+function closeModal(){
+ $('v42Modal')?.classList.remove('open');
+ $('gbItemModal')?.classList.remove('open');
+}
+function createItem(){
+ try{
+   const core=window.FairSingGradebookCoreV53;
+   if(!core?.addAssessmentItem)throw new Error('成績管理核心尚未載入');
+
+   const category=$('v42Cat')?.value||$('gbItemCategory')?.value||'daily';
+   const type=$('v42Type')?.value||$('gbItemType')?.value||'其他';
+   const name=($('v42Name')?.value||$('gbItemName')?.value||'').trim();
+   const max=Number($('v42Max')?.value||$('gbItemMax')?.value||100);
+   const weight=Number($('v42Weight')?.value||$('gbItemWeight')?.value||1);
+   const date=($('v42Date')?.value||$('gbItemDate')?.value||'').trim();
+   const special=$('v42Special')?.value||$('gbItemSpecial')?.value||'一般';
+   const note=($('v42Note')?.value||$('gbItemNote')?.value||'').trim();
+
+   if(!name)return alert('請輸入項目名稱。');
+
+   core.addAssessmentItem({
+     category,type,name,max,weight,
+     date, // 日期允許空白
+     special,note
+   });
+   closeModal();
+   alert('成績項目已建立'+(date?'。':'，日期可之後再補。'));
+ }catch(e){
+   alert('建立項目失敗：'+(e?.message||e));
+ }
+}
+function bind(){
+ ['v42Save','v42Confirm','gbItemSave','gbItemConfirm'].forEach(id=>{
+   const old=$(id);
+   if(!old)return;
+   const btn=old.cloneNode(true);
+   old.replaceWith(btn);
+   btn.addEventListener('click',createItem);
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,100));
+else setTimeout(bind,100);
 })();
 </script>
 </body></html>
