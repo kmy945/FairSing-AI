@@ -1293,6 +1293,103 @@ window.FairSingCloudV45={
 const D={classes:[],templates:[{id:'v',name:'伴奏歌唱',type:'vocal',ai:['音準','節奏','穩定度'],teacher:['音色','情感','台風']},{id:'a',name:'清唱',type:'acapella',ai:['音準','節奏','穩定度','音域'],teacher:['咬字','情感','自信']},{id:'f',name:'自由演唱',type:'free',ai:['音準','穩定度','音域'],teacher:['音樂性','表現力','創意']},{id:'r',name:'直笛獨奏',type:'recorder',ai:['音準','節奏','音符正確率','音長'],teacher:['音色','運舌','換氣']},{id:'p',name:'節奏打擊',type:'percussion',ai:['拍點準確度','節奏正確率','速度穩定度','漏拍與多拍'],teacher:['姿勢','協調性','力度控制','完整度']},{id:'ci',name:'自訂樂器',type:'customInstrument',instrument:'其他',useMetronome:true,needBacking:false,useScoreReference:false,ai:['音準','節奏','穩定度'],teacher:['音色','技巧','完整度']}],orders:{},records:[],session:null,draft:null,settings:{sw:80,tw:20},metronome:{bpm:80,beats:4,countIn:1,continue:true},
 curriculumMeta:{courseName:'音樂',publisher:'康軒',semester:'115學年度上學期'},
 curriculumProfiles:{},activeCurriculumGrade:'7',curriculum:[],reflections:[],quickDrawHistory:[],classroomState:null,assessmentQueue:null,assessmentDrafts:{},studentStatuses:{},appPreferences:{teacherName:'Meng',schoolName:'茄萣國中',uiMode:'full'},musicTraining:{earCorrect:0,earTotal:0,earCurrent:null,sightSing:null,sightRead:null},classSessions:[],formalClassDraft:null,release:{version:'3.1.0',channel:'stable',firstRunCompleted:false,releasedAt:'2026-08-02'},audioAssessment:{history:[],calibration:null},classroomMode:{duration:45,elapsed:0,running:false,paused:false,currentStep:0,topic:'',notes:'',flow:null,reminded:{}}};let S=structuredClone(D),mode='none',U=null,selClass=null,selStudent=null,unsub=null,timer;
+window.FairSingRosterBridgeV57={
+  listClasses(){
+    return (S.classes||[]).map(c=>({
+      id:c.id,name:String(c.name||'').trim(),
+      students:(c.students||[]).map(s=>({id:s.id,no:String(s.no||'').trim(),name:String(s.name||'').trim()}))
+    }));
+  },
+  getClassByName(name){
+    const n=String(name||'').trim();
+    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c)return null;
+    return {id:c.id,name:c.name,students:(c.students||[]).map(s=>({...s}))};
+  },
+  ensureClass(name){
+    const n=String(name||'').trim();
+    if(!n)return null;
+    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c){
+      c={id:crypto.randomUUID(),name:n,students:[]};
+      S.classes.push(c);
+      try{save()}catch(e){}
+      try{render()}catch(e){}
+      window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}));
+    }
+    return c.id;
+  },
+  replaceRoster(name,students){
+    const n=String(name||'').trim();
+    if(!n)return {total:0};
+    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c){
+      c={id:crypto.randomUUID(),name:n,students:[]};
+      S.classes.push(c);
+    }
+    c.students=(students||[]).map((s,i)=>({
+      id:s.id||crypto.randomUUID(),
+      no:String(s.no||String(i+1).padStart(2,'0')).trim(),
+      name:String(s.name||'').trim()
+    })).filter(s=>s.name);
+    c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}));
+    return {total:c.students.length};
+  },
+  addStudents(name,rows){
+    const n=String(name||'').trim();
+    if(!n)return {added:0,skipped:0,total:0};
+    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c){
+      c={id:crypto.randomUUID(),name:n,students:[]};
+      S.classes.push(c);
+    }
+    let added=0,skipped=0;
+    (rows||[]).forEach((r,i)=>{
+      const no=String(r?.no||'').trim();
+      const nm=String(r?.name||'').trim();
+      if(!nm){skipped++;return}
+      if(c.students.some(s=>(no&&String(s.no||'').trim()===no)||String(s.name||'').trim()===nm)){
+        skipped++;return;
+      }
+      c.students.push({
+        id:crypto.randomUUID(),
+        no:no||String(c.students.length+1).padStart(2,'0'),
+        name:nm
+      });
+      added++;
+    });
+    c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}));
+    return {added,skipped,total:c.students.length};
+  },
+  updateStudent(className,id,patch){
+    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    if(!c)return false;
+    const s=(c.students||[]).find(x=>x.id===id);
+    if(!s)return false;
+    Object.assign(s,patch||{});
+    c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
+    return true;
+  },
+  deleteStudent(className,id){
+    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    if(!c)return false;
+    c.students=(c.students||[]).filter(s=>s.id!==id);
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
+    return true;
+  }
+};
+
 window.FairSingStateBridgeV23={
  getMusicTraining(){S.musicTraining=S.musicTraining||{};return S.musicTraining},
  getSight(kind){S.musicTraining=S.musicTraining||{};return kind==='sing'?S.musicTraining.sightSing:S.musicTraining.sightRead},
@@ -1337,9 +1434,9 @@ window.googleLogin=async()=>{
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
 function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
-window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save()};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){S.classes=S.classes.filter(c=>c.id!==id);save()}};
+window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}))};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){const old=S.classes.find(c=>c.id===id)?.name||'';S.classes=S.classes.filter(c=>c.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:old}}))}};
 function renderClasses(){let c=S.classes.find(x=>x.id===selClass)||S.classes[0];if(c)selClass=c.id;classList.innerHTML=S.classes.map(x=>`<div class="row between" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn ${x.id===selClass?'primary':'ghost'}" onclick="pickClass('${x.id}')">${esc(x.name)}（${x.students.length}）</button><button class="btn danger" onclick="delClass('${x.id}')">刪除</button></div>`).join('')||'尚無班級';studentTitle.textContent=c?c.name:'學生';studentList.innerHTML=c?.students.length?`<table><tr><th>座號</th><th>姓名</th><th></th></tr>${c.students.map(s=>`<tr><td>${esc(s.no)}</td><td>${esc(s.name||'未填')}</td><td><button class="btn danger" onclick="delStudent('${s.id}')">刪除</button></td></tr>`).join('')}</table>`:'尚無學生'}
-window.openStudent=()=>{if(!selClass)return alert('請先建立班級');modalOpen('新增學生','<label>座號</label><input id="sno"><label>姓名（選填）</label><input id="sname"><button class="btn primary" style="margin-top:12px" onclick="addStudent()">新增</button>')};window.addStudent=()=>{let c=S.classes.find(x=>x.id===selClass),no=sno.value.trim();if(!c||!no)return;c.students.push({id:crypto.randomUUID(),no,name:sname.value.trim()});c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));closeModal();save()};window.delStudent=id=>{let c=S.classes.find(x=>x.id===selClass);if(c&&confirm('刪除學生？')){c.students=c.students.filter(s=>s.id!==id);save()}};
+window.openStudent=()=>{if(!selClass)return alert('請先建立班級');modalOpen('新增學生','<label>座號</label><input id="sno"><label>姓名（選填）</label><input id="sname"><button class="btn primary" style="margin-top:12px" onclick="addStudent()">新增</button>')};window.addStudent=()=>{let c=S.classes.find(x=>x.id===selClass),no=sno.value.trim();if(!c||!no)return;c.students.push({id:crypto.randomUUID(),no,name:sname.value.trim()});c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}))};window.delStudent=id=>{let c=S.classes.find(x=>x.id===selClass);if(c&&confirm('刪除學生？')){c.students=c.students.filter(s=>s.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}))}};
 window.openTemplate=()=>modalOpen('新增模板','<label>名稱</label><input id="tn"><label>類型</label><select id="tt" onchange="toggleInstrumentFields()"><option value="vocal">伴奏歌唱</option><option value="acapella">清唱</option><option value="free">自由演唱</option><option value="recorder">直笛獨奏</option><option value="percussion">節奏打擊</option><option value="customInstrument">自訂樂器</option><option value="custom">自訂評量</option></select><div id="instrumentFields" style="display:none"><label>樂器</label><select id="instrumentSelect" onchange="toggleOtherInstrument()"><option>烏克麗麗</option><option>吉他</option><option>木箱鼓</option><option>爵士鼓</option><option>木琴</option><option>陶笛</option><option>口琴</option><option>小提琴</option><option>二胡</option><option>古箏</option><option>笛子</option><option>薩克斯風</option><option>長笛</option><option>小號</option><option>其他</option></select><div id="otherInstrument" style="display:none"><label>其他樂器名稱</label><input id="otherInstrumentName"></div><div class="switch"><span>使用節拍器</span><input id="useMetro" type="checkbox" checked></div><div class="switch"><span>需要伴奏</span><input id="needBacking" type="checkbox"></div><div class="switch"><span>使用 MIDI／MusicXML 比對</span><input id="useScoreRef" type="checkbox"></div></div><label>AI項目（逗號分隔）</label><input id="tai" value="音準,節奏,穩定度"><label>教師項目</label><input id="ttr" value="音色,技巧,完整度"><button class="btn primary" style="margin-top:12px" onclick="addTemplate()">新增</button>');window.toggleInstrumentFields=()=>{instrumentFields.style.display=tt.value==="customInstrument"?"block":"none";if(tt.value==="customInstrument")toggleOtherInstrument()};window.toggleOtherInstrument=()=>{otherInstrument.style.display=instrumentSelect.value==="其他"?"block":"none"};window.addTemplate=()=>{if(!tn.value.trim())return;let inst=tt.value==="customInstrument"?(instrumentSelect.value==="其他"?(otherInstrumentName.value.trim()||"其他"):instrumentSelect.value):"";S.templates.push({id:crypto.randomUUID(),name:tn.value.trim(),type:tt.value,instrument:inst,useMetronome:!!document.getElementById("useMetro")?.checked,needBacking:!!document.getElementById("needBacking")?.checked,useScoreReference:!!document.getElementById("useScoreRef")?.checked,ai:tai.value.split(',').map(x=>x.trim()),teacher:ttr.value.split(',').map(x=>x.trim())});closeModal();save()};function renderTemplates(){templateList.innerHTML=S.templates.map(t=>`<div class="card s4"><h3>${esc(t.name)}</h3>${t.instrument?`<p><b>樂器：</b>${esc(t.instrument)}</p>`:''}<p>AI：${esc(t.ai.join('、'))}</p><p>教師：${esc(t.teacher.join('、'))}</p></div>`).join('')}
 function selectors(){let c=S.classes.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');orderClass.innerHTML=c;assessClass.innerHTML=c;if(window.exportClass)exportClass.innerHTML=c;assessTemplate.innerHTML=S.templates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');if(selClass){orderClass.value=selClass;assessClass.value=selClass;if(window.exportClass)exportClass.value=selClass}renderExportClass?.()}
 
@@ -4874,19 +4971,32 @@ window.mergeTiedPlaybackV27=function(score){
    saveRosters(rosters);
  }
  function saveAll(){
-   const all=loadAll(),rosters=loadRosters();
-   rosters[rosterKey()]=state.students;
-   saveRosters(rosters);
+   const all=loadAll();
    all[contextKey()]={columns:state.columns,scores:state.scores};
-   localStorage.setItem(KEY,JSON.stringify(all))
+   localStorage.setItem(KEY,JSON.stringify(all));
+   const bridge=window.FairSingRosterBridgeV57;
+   if(bridge){
+     bridge.replaceRoster($('gbClass').value,state.students);
+   }else{
+     const rosters=loadRosters();
+     rosters[rosterKey()]=state.students;
+     saveRosters(rosters);
+   }
  }
  function loadContext(){
-   const all=loadAll(),rosters=loadRosters();
-   migrateRosterIfSafe(all,rosters);
-   const rr=loadRosters();
+   const all=loadAll();
    const book=all[contextKey()]||{};
+   const bridge=window.FairSingRosterBridgeV57;
+   let students=[];
+   if(bridge){
+     const c=bridge.getClassByName($('gbClass').value);
+     students=c?.students||[];
+   }else{
+     const rosters=loadRosters();
+     students=Array.isArray(rosters[rosterKey()])?rosters[rosterKey()]:[];
+   }
    state={
-     students:Array.isArray(rr[rosterKey()])?rr[rosterKey()]:[],
+     students:students.map(s=>({...s})),
      columns:Array.isArray(book.columns)?book.columns:[],
      scores:(book.scores&&typeof book.scores==='object')?book.scores:{}
    };
@@ -5015,29 +5125,30 @@ window.mergeTiedPlaybackV27=function(score){
  };
  window.FairSingGradebookCoreV53={
    addStudentsBatch:(rows)=>{
-     if(!Array.isArray(rows))return {added:0,skipped:0,total:state.students.length};
-     let added=0,skipped=0;
-     rows.forEach((r,i)=>{
-       const no=String(r?.no??'').trim();
-       const name=String(r?.name??'').trim();
-       if(!name){skipped++;return}
-       const duplicate=state.students.some(s=>
-         (no && String(s.no??'').trim()===no) ||
-         String(s.name??'').trim()===name
-       );
-       if(duplicate){skipped++;return}
-       state.students.push({
-         id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),
-         no:no||String(state.students.length+1).padStart(2,'0'),
-         name
-       });
-       added++;
-     });
-     saveAll();
-     render();
-     return {added,skipped,total:state.students.length};
-   },
-   getStudents:()=>state.students.map(s=>({...s})),
+      const bridge=window.FairSingRosterBridgeV57;
+      if(bridge){
+        const result=bridge.addStudents($('gbClass').value,rows);
+        loadContext();
+        return result;
+      }
+      if(!Array.isArray(rows))return {added:0,skipped:0,total:state.students.length};
+      let added=0,skipped=0;
+      rows.forEach((r,i)=>{
+        const no=String(r?.no??'').trim();
+        const name=String(r?.name??'').trim();
+        if(!name){skipped++;return}
+        const duplicate=state.students.some(s=>
+          (no && String(s.no??'').trim()===no) ||
+          String(s.name??'').trim()===name
+        );
+        if(duplicate){skipped++;return}
+        state.students.push({id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),no:no||String(state.students.length+1).padStart(2,'0'),name});
+        added++;
+      });
+      saveAll();render();
+      return {added,skipped,total:state.students.length};
+    },
+    getStudents:()=>state.students.map(s=>({...s})),
    reload:()=>loadContext(),
    save:()=>saveAll(),
    render:()=>render()
@@ -5725,6 +5836,43 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,150));
 else setTimeout(bind,150);
+})();
+</script>
+
+<script id="v57-shared-roster-sync">
+(function(){
+const $=id=>document.getElementById(id);
+
+function refreshGradebookClasses(prefer){
+  const bridge=window.FairSingRosterBridgeV57;
+  const sel=$('v39ClassSelect');
+  const hidden=$('gbClass');
+  if(!bridge||!sel||!hidden)return;
+  const names=bridge.listClasses().map(c=>c.name).filter(Boolean);
+  const current=prefer||sel.value||hidden.value||names[0]||'706';
+  sel.innerHTML='';
+  names.forEach(n=>sel.add(new Option(n,n)));
+  if(!names.includes(current) && current){
+    bridge.ensureClass(current);
+    sel.add(new Option(current,current));
+  }
+  sel.value=current;
+  hidden.value=current;
+}
+function reloadGradebook(){
+  window.FairSingGradebookCoreV53?.reload?.();
+}
+function boot(){
+  refreshGradebookClasses();
+  window.addEventListener('fairsing-roster-changed',e=>{
+    const current=$('v39ClassSelect')?.value||$('gbClass')?.value||'';
+    refreshGradebookClasses(current);
+    reloadGradebook();
+  });
+  setTimeout(()=>refreshGradebookClasses(),500);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+else boot();
 })();
 </script>
 </body></html>
