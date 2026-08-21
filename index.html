@@ -4964,71 +4964,38 @@ window.mergeTiedPlaybackV27=function(score){
  });
  ['gbDailyWeight','gbExamWeight'].forEach(id=>$(id).addEventListener('change',render));
  $('gradebookEntryV33').onclick=()=>$('gradebookV33').scrollIntoView({behavior:'smooth',block:'start'});
- loadContext();
-})();
 
- window.FairSingGB39={load:()=>loadContext(),get:()=>state,save:()=>saveAll(),render:()=>render()};
-
- window.FairSingGB40={
-  get:()=>state, save:()=>saveAll(), render:()=>render(), load:()=>loadContext(),
-  calc:(sid)=>studentScores(sid)
- };
-
- window.FairSingGB42={
-   getState:()=>state,
-   addColumnDirect:(meta)=>{
-     const c={
-       id:'c'+Date.now()+Math.random().toString(36).slice(2,7),
-       name:meta.name,
-       category:meta.category||'daily',
-       type:meta.type||'作業',
-       max:Number(meta.max)||100,
-       weight:Number(meta.weight)||1,
-       special:meta.special||'',
-       date:meta.date||'',
-       note:meta.note||''
-     };
-     state.columns.push(c);
-     saveAll();
-     render();
-     return c;
-   }
- };
-
- window.FairSingGB44={
-   getState:()=>state,
-   setState:(x)=>{state=x;saveAll();render()},
-   save:()=>saveAll(),
-   render:()=>render(),
-   load:()=>loadContext(),
-   calc:(sid)=>studentScores(sid)
- };
-
- window.FairSingGB47={
+ window.FairSingGradebookCoreV53={
    addStudentsBatch:(rows)=>{
-     if(!Array.isArray(rows)) return {added:0,skipped:0};
-     let added=0, skipped=0;
+     if(!Array.isArray(rows))return {added:0,skipped:0,total:state.students.length};
+     let added=0,skipped=0;
      rows.forEach((r,i)=>{
        const no=String(r?.no??'').trim();
        const name=String(r?.name??'').trim();
        if(!name){skipped++;return}
-       const exists=state.students.some(s=>
+       const duplicate=state.students.some(s=>
          (no && String(s.no??'').trim()===no) ||
          String(s.name??'').trim()===name
        );
-       if(exists){skipped++;return}
+       if(duplicate){skipped++;return}
        state.students.push({
          id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),
-         no:no || String(state.students.length+1).padStart(2,'0'),
-         name:name
+         no:no||String(state.students.length+1).padStart(2,'0'),
+         name
        });
        added++;
      });
      saveAll();
      render();
      return {added,skipped,total:state.students.length};
-   }
+   },
+   getStudents:()=>state.students.map(s=>({...s})),
+   reload:()=>loadContext(),
+   save:()=>saveAll(),
+   render:()=>render()
  };
+ loadContext();
+})();
 </script>
 
 
@@ -5584,14 +5551,21 @@ function openModal(){
 }
 function closeModal(){$('v46BatchModal').classList.remove('open')}
 function addBatch(){
+ const rows=parsedRows();
+ if(!rows.length)return alert('請先貼上學生名單。');
+ const core=window.FairSingGradebookCoreV53;
+ if(!core||typeof core.addStudentsBatch!=='function'){
+   alert('成績管理核心尚未完成載入，請重新整理頁面後再試。');
+   return;
+ }
  try{
-   const rows=parsedRows();
-   if(!rows.length){alert('請先貼上學生名單。');return}
-   if(!window.FairSingGB47?.addStudentsBatch){alert('成績管理核心尚未載入，請重新進入成績管理。');return}
-   const result=window.FairSingGB47.addStudentsBatch(rows);
+   const result=core.addStudentsBatch(rows);
    closeModal();
-   alert('批次加入完成。\\n新增：'+result.added+' 人'+(result.skipped?'\\n略過重複／空白：'+result.skipped+' 人':'')+'\\n目前班級共：'+result.total+' 人');
- }catch(err){console.error(err);alert('批次加入失敗：'+(err?.message||err))}
+   alert(`批次加入完成。\\n新增：${result.added} 人${result.skipped?`\\n略過重複：${result.skipped} 人`:''}\\n目前班級共：${result.total} 人`);
+ }catch(err){
+   console.error(err);
+   alert('批次加入失敗：'+(err?.message||err));
+ }
 }
 function bind(){
  const open=$('v46BatchStudents'), confirm=$('v46BatchConfirm'), cancel=$('v46BatchCancel'), modal=$('v46BatchModal'), ta=$('v46BatchText');
@@ -5687,4 +5661,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 else setTimeout(boot,120);
 })();
 </script>
-\n<script id="v52-batch-state-fix">\n(function(){\nfunction normalizeRows(rows){ return Array.isArray(rows)?rows:[]; }\nfunction addStudentsBatchV52(rows){\n  rows=normalizeRows(rows);\n  const core=window.FairSingGB44;\n  if(!core || typeof core.getState!=='function' || typeof core.setState!=='function') throw new Error('成績管理核心尚未載入');\n  const current=core.getState() || {};\n  const next={...current,students:Array.isArray(current.students)?current.students.map(x=>({...x})):[]};\n  let added=0, skipped=0;\n  rows.forEach((r,i)=>{\n    const no=String((r&&r.no)||'').trim();\n    const name=String((r&&r.name)||'').trim();\n    if(!name){skipped++;return;}\n    const exists=next.students.some(st=>(no&&String(st.no||'').trim()===no)||String(st.name||'').trim()===name);\n    if(exists){skipped++;return;}\n    next.students.push({id:'s'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,7),no:no||String(next.students.length+1).padStart(2,'0'),name});\n    added++;\n  });\n  core.setState(next);\n  return {added,skipped,total:next.students.length};\n}\nfunction install(){\n  window.FairSingGB47=window.FairSingGB47||{};\n  window.FairSingGB47.addStudentsBatch=addStudentsBatchV52;\n  const b=document.getElementById('v46BatchConfirm'); if(b)b.dataset.handler='v52-state-safe';\n}\nif(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();\nsetTimeout(install,500);\n})();\n</script>\n</body></html>
+\n
+\n</body></html>
