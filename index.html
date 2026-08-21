@@ -5190,6 +5190,45 @@ window.mergeTiedPlaybackV27=function(score){
       return {added,skipped,total:state.students.length};
     },
     getStudents:()=>state.students.map(s=>({...s})),
+   getSnapshot:()=>JSON.parse(JSON.stringify(state)),
+   importScoresFromRows:(rows)=>{
+     let matched=0;
+     (rows||[]).forEach(r=>{
+       const keys=Object.keys(r||{});
+       const getVal=(names)=>{
+         const k=keys.find(k=>names.includes(String(k).trim().toLowerCase()));
+         return k?r[k]:'';
+       };
+       const no=String(getVal(['座號','號碼','no','number'])??'').trim();
+       const name=String(getVal(['姓名','學生姓名','name'])??'').trim();
+       const s=state.students.find(x=>(no&&String(x.no).trim()===no)||(!no&&name&&String(x.name).trim()===name));
+       if(!s)return;
+       state.scores[s.id]=state.scores[s.id]||{};
+       state.columns.forEach(c=>{
+         const k=keys.find(k=>String(k).trim()===String(c.name).trim());
+         if(k!==undefined && String(r[k]??'').trim()!==''){
+           state.scores[s.id][c.id]=r[k];
+         }
+       });
+       matched++;
+     });
+     saveAll();render();
+     return matched;
+   },
+   exportRows:()=>{
+     const heads=['班級','座號','姓名',...state.columns.map(c=>c.name),'平時成績','定期評量','學期成績'];
+     const rows=state.students.map(s=>{
+       const x=studentScores(s.id);
+       return [
+         $('gbClass').value,s.no,s.name,
+         ...state.columns.map(c=>state.scores[s.id]?.[c.id]??''),
+         x.daily===null?'':Number(x.daily.toFixed(1)),
+         x.exam===null?'':Number(x.exam.toFixed(1)),
+         x.semester===null?'':Number(x.semester.toFixed(1))
+       ];
+     });
+     return {heads,rows};
+   },
    reload:()=>loadContext(),
    save:()=>saveAll(),
    render:()=>render()
@@ -5329,94 +5368,117 @@ const $=id=>document.getElementById(id);
 let mode='class';
 
 function ensureXLSX(){
- if(typeof XLSX==='undefined')throw new Error('Excel 元件尚未載入。請確認目前有網路後再試一次。');
+ if(typeof XLSX==='undefined')throw new Error('Excel 元件尚未載入，請確認網路後再試一次。');
 }
 function norm(v){return String(v??'').trim()}
 function findKey(obj,names){
  const keys=Object.keys(obj||{});
  return keys.find(k=>names.includes(norm(k).toLowerCase()));
 }
-function parseRows(ws){
- return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
-}
-function currentClass(){return $('v39ClassSelect')?.value||$('gbClass')?.value||'班級'}
-function setClassName(name){
- if(!name)return;
+function parseRows(ws){return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false})}
+function currentClass(){return $('v39ClassSelect')?.value||$('gbClass')?.value||''}
+
+function selectClass(name){
+ const n=norm(name); if(!n)return;
+ const bridge=window.FairSingRosterBridgeV57;
+ bridge?.ensureClass?.(n);
+
  const sel=$('v39ClassSelect');
- const existing=[...sel.options].map(o=>o.value);
- if(!existing.includes(name)){
-   const arr=(()=>{try{return JSON.parse(localStorage.getItem('FairSingV39Classes')||'[]')}catch(e){return []}})();
-   if(!arr.includes(name)){arr.push(name);localStorage.setItem('FairSingV39Classes',JSON.stringify(arr))}
-   sel.add(new Option(name,name));
+ if(sel && ![...sel.options].some(o=>o.value===n))sel.add(new Option(n,n));
+ if(sel)sel.value=n;
+ if($('gbClass')){
+   $('gbClass').value=n;
+   $('gbClass').dispatchEvent(new Event('change',{bubbles:true}));
  }
- sel.value=name;$('gbClass').value=name;
- window.FairSingGB40.load();
+ window.FairSingGradebookCoreV53?.reload?.();
 }
-function importStudents(rows){
- const gb=window.FairSingGB40,st=gb.get();
- let added=0;
- rows.forEach((r,i)=>{
+
+function normalizeStudentRows(rows){
+ return (rows||[]).map(r=>{
    const nk=findKey(r,['姓名','學生姓名','name']);
    const nok=findKey(r,['座號','號碼','no','number']);
-   const name=norm(nk?r[nk]:'');
-   if(!name)return;
-   const no=norm(nok?r[nok]:'')||String(st.students.length+1).padStart(2,'0');
-   if(st.students.some(s=>norm(s.no)===no&&norm(s.name)===name))return;
-   st.students.push({id:'s'+Date.now()+i+Math.random().toString(36).slice(2,5),no,name});
-   added++;
- });
- gb.save();gb.render();return added
+   return {no:norm(nok?r[nok]:''),name:norm(nk?r[nk]:'')};
+ }).filter(r=>r.name);
 }
+
+function importClassInfo(rows){
+ const ck=findKey(rows[0]||{},['班級','class','班別']);
+ if(!ck){
+   const cls=currentClass();
+   const result=window.FairSingGradebookCoreV53?.addStudentsBatch?.(normalizeStudentRows(rows));
+   return {classes:1,students:result?.added||0,message:`已匯入到 ${cls}`};
+ }
+
+ const grouped=new Map();
+ rows.forEach(r=>{
+   const cls=norm(r[ck]);
+   if(!cls)return;
+   if(!grouped.has(cls))grouped.set(cls,[]);
+   grouped.get(cls).push(r);
+ });
+
+ let added=0;
+ const bridge=window.FairSingRosterBridgeV57;
+ grouped.forEach((rs,cls)=>{
+   bridge?.ensureClass?.(cls);
+   const result=bridge?.addStudents?.(cls,normalizeStudentRows(rs));
+   added+=result?.added||0;
+ });
+ window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:currentClass()}}));
+ window.FairSingGradebookCoreV53?.reload?.();
+ return {classes:grouped.size,students:added,message:`已處理 ${grouped.size} 個班級`};
+}
+
+function importCurrentClassScores(rows){
+ const core=window.FairSingGradebookCoreV53;
+ if(!core)throw new Error('成績管理核心尚未載入');
+
+ const students=normalizeStudentRows(rows);
+ const addResult=core.addStudentsBatch(students);
+ const matched=core.importScoresFromRows(rows);
+ return {added:addResult?.added||0,matched};
+}
+
 async function handleFile(file){
  ensureXLSX();
  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
- const ws=wb.Sheets[wb.SheetNames[0]], rows=parseRows(ws);
+ const ws=wb.Sheets[wb.SheetNames[0]];
+ const rows=parseRows(ws);
  if(!rows.length)throw new Error('Excel 沒有可讀取的資料');
+
  if(mode==='class'){
-   const first=rows[0];
-   const ck=findKey(first,['班級','class','班別']);
-   const cls=norm(ck?first[ck]:'');
-   if(cls)setClassName(cls);
-   const n=importStudents(rows);
-   alert((cls?'已建立／切換班級「'+cls+'」。\n':'')+'已匯入 '+n+' 位學生。');
+   const r=importClassInfo(rows);
+   alert(`班級資訊匯入完成。\n${r.message}\n新增學生：${r.students} 人`);
  }else{
-   const n=importStudents(rows);
-   const gb=window.FairSingGB40,st=gb.get();
-   // Import score columns matching existing assessment names.
-   rows.forEach(r=>{
-     const nk=findKey(r,['姓名','學生姓名','name']),nok=findKey(r,['座號','號碼','no','number']);
-     const name=norm(nk?r[nk]:''),no=norm(nok?r[nok]:'');
-     const s=st.students.find(x=>(no&&norm(x.no)===no)||(!no&&name&&norm(x.name)===name));
-     if(!s)return;
-     st.scores[s.id]=st.scores[s.id]||{};
-     st.columns.forEach(c=>{
-       const k=Object.keys(r).find(k=>norm(k)===norm(c.name));
-       if(k&&norm(r[k])!=='')st.scores[s.id][c.id]=r[k];
-     });
-   });
-   gb.save();gb.render();
-   alert('Excel 匯入完成。新增 '+n+' 位學生，並帶入可對應的成績欄位。');
+   const r=importCurrentClassScores(rows);
+   alert(`Excel 匯入完成。\n目前班級新增學生：${r.added} 人\n成功對應成績：${r.matched} 人`);
  }
 }
+
 function exportExcel(){
  ensureXLSX();
- const gb=window.FairSingGB40,st=gb.get();
- const heads=['班級','座號','姓名',...st.columns.map(c=>c.name),'平時成績','定期評量','學期成績'];
- const rows=st.students.map(s=>{
-   const c=gb.calc(s.id);
-   return [currentClass(),s.no,s.name,...st.columns.map(col=>st.scores[s.id]?.[col.id]??''),
-     c.daily==null?'':Number(c.daily.toFixed(1)),c.exam==null?'':Number(c.exam.toFixed(1)),c.semester==null?'':Number(c.semester.toFixed(1))]
- });
- const ws=XLSX.utils.aoa_to_sheet([heads,...rows]);
- ws['!cols']=heads.map((h,i)=>({wch:i===2?16:Math.max(10,String(h).length*2)}));
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'成績');
+ const core=window.FairSingGradebookCoreV53;
+ if(!core)throw new Error('成績管理核心尚未載入');
+ const data=core.exportRows();
+ const ws=XLSX.utils.aoa_to_sheet([data.heads,...data.rows]);
+ ws['!cols']=data.heads.map((h,i)=>({wch:i===2?16:Math.max(10,String(h).length*2)}));
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,'成績');
  const year=$('gbYear').value,term=$('gbTerm').value,sub=$('gbSubject').value;
- XLSX.writeFile(wb,year+'-'+term+'_'+currentClass()+'_'+sub+'_成績.xlsx');
+ XLSX.writeFile(wb,`${year}-${term}_${currentClass()}_${sub}_成績.xlsx`);
 }
-$('v40ImportClass').onclick=()=>{mode='class';$('v40File').click()};
-$('v40ImportExcel').onclick=()=>{mode='scores';$('v40File').click()};
-$('v40ExportExcel').onclick=()=>{try{exportExcel()}catch(e){alert(e.message)}};
-$('v40File').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{await handleFile(f)}catch(err){alert('匯入失敗：'+err.message)}e.target.value=''};
+
+function boot(){
+ $('v40ImportClass').onclick=()=>{mode='class';$('v40File').click()};
+ $('v40ImportExcel').onclick=()=>{mode='scores';$('v40File').click()};
+ $('v40ExportExcel').onclick=()=>{try{exportExcel()}catch(e){alert('匯出失敗：'+e.message)}};
+ $('v40File').onchange=async e=>{
+   const f=e.target.files?.[0];if(!f)return;
+   try{await handleFile(f)}catch(err){console.error(err);alert('匯入失敗：'+err.message)}
+   e.target.value='';
+ };
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 
