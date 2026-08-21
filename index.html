@@ -1313,7 +1313,48 @@ function normalizeRosterV58(students){
   valid.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
   return {valid,orphans};
 }
+
+function normalizeClassNameV62(v){return String(v??'').trim().replace(/\s+/g,'')}
+function dedupeClassesV62(){
+  const map=new Map(),out=[];
+  for(const raw of (S.classes||[])){
+    const name=normalizeClassNameV62(raw?.name);
+    if(!name)continue;
+    if(!map.has(name)){
+      const c={...raw,name,students:Array.isArray(raw.students)?raw.students:[]};
+      map.set(name,c);out.push(c);
+    }else{
+      const keep=map.get(name);
+      const ids=new Set((keep.students||[]).map(s=>s?.id).filter(Boolean));
+      const keys=new Set((keep.students||[]).map(s=>`${String(s?.no||'').trim()}|${String(s?.name||'').trim()}`));
+      for(const s of (raw.students||[])){
+        const key=`${String(s?.no||'').trim()}|${String(s?.name||'').trim()}`;
+        if((s?.id&&ids.has(s.id))||keys.has(key))continue;
+        keep.students.push(s);
+        if(s?.id)ids.add(s.id);keys.add(key);
+      }
+    }
+  }
+  const before=(S.classes||[]).length;
+  S.classes=out;
+  return {before,after:out.length};
+}
+
+function promoteClassNameV64(name){
+  const n=String(name||'').trim();
+  if(!/^[789]\d{2}$/.test(n))return {from:n,to:n,status:'unchanged'};
+  const grade=Number(n[0]),tail=n.slice(1);
+  if(grade===7)return {from:n,to:'8'+tail,status:'promoted'};
+  if(grade===8)return {from:n,to:'9'+tail,status:'promoted'};
+  return {from:n,to:n,status:'graduated'};
+}
 window.FairSingRosterBridgeV57={
+  dedupeClasses(){
+    const r=dedupeClassesV62();
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    return r;
+  },
   listClasses(){
     return (S.classes||[]).map(c=>{
       const r=normalizeRosterV58(c.students||[]);
@@ -1321,16 +1362,16 @@ window.FairSingRosterBridgeV57={
     });
   },
   getClassByName(name){
-    const n=String(name||'').trim();
-    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    const n=normalizeClassNameV62(name);
+    const c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c)return null;
     const r=normalizeRosterV58(c.students||[]);
     return {id:c.id,name:c.name,students:r.valid.map(s=>({...s}))};
   },
   ensureClass(name){
-    const n=String(name||'').trim();
+    const n=normalizeClassNameV62(name);
     if(!n)return null;
-    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    let c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c){
       c={id:crypto.randomUUID(),name:n,students:[]};
       S.classes.push(c);
@@ -1341,9 +1382,9 @@ window.FairSingRosterBridgeV57={
     return c.id;
   },
   replaceRoster(name,students){
-    const n=String(name||'').trim();
+    const n=normalizeClassNameV62(name);
     if(!n)return {total:0};
-    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    let c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c){
       c={id:crypto.randomUUID(),name:n,students:[]};
       S.classes.push(c);
@@ -1363,9 +1404,9 @@ window.FairSingRosterBridgeV57={
     return {total:c.students.length};
   },
   addStudents(name,rows){
-    const n=String(name||'').trim();
+    const n=normalizeClassNameV62(name);
     if(!n)return {added:0,skipped:0,total:0};
-    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    let c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c){
       c={id:crypto.randomUUID(),name:n,students:[]};
       S.classes.push(c);
@@ -1392,7 +1433,7 @@ window.FairSingRosterBridgeV57={
     return {added,skipped,total:c.students.length};
   },
   updateStudent(className,id,patch){
-    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    const c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===normalizeClassNameV62(className));
     if(!c)return false;
     const s=(c.students||[]).find(x=>x.id===id);
     if(!s)return false;
@@ -1404,7 +1445,7 @@ window.FairSingRosterBridgeV57={
     return true;
   },
   deleteStudent(className,id){
-    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    const c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===normalizeClassNameV62(className));
     if(!c)return false;
     c.students=(c.students||[]).filter(s=>s.id!==id);
     try{save()}catch(e){}
@@ -1413,7 +1454,7 @@ window.FairSingRosterBridgeV57={
     return true;
   },
   repairClass(className){
-    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===String(className||'').trim());
+    const c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===normalizeClassNameV62(className));
     if(!c)return {total:0,removed:0};
     const rr=normalizeRosterV58(c.students||[]);
     if(rr.orphans.length){
@@ -1430,22 +1471,22 @@ window.FairSingRosterBridgeV57={
     return {total:rr.valid.length,removed:rr.orphans.length};
   },
   selectClass(className){
-    const n=String(className||'').trim();
-    const c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    const n=normalizeClassNameV62(className);
+    const c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c)return false;
     selClass=c.id; selStudent=null;
     try{render()}catch(e){}
     return true;
   },
   upsertStudent(className,student){
-    const n=String(className||'').trim();
+    const n=normalizeClassNameV62(className);
     if(!n)return null;
-    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    let c=(S.classes||[]).find(x=>normalizeClassNameV62(x.name)===n);
     if(!c){c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c)}
     let s=student?.id?(c.students||[]).find(x=>x.id===student.id):null;
     if(!s){
       const no=String(student?.no||'').trim(),nm=String(student?.name||'').trim();
-      s=(c.students||[]).find(x=>(no&&String(x.no||'').trim()===no)||(nm&&String(x.name||'').trim()===nm));
+      s=(c.students||[]).find(x=>(no&&String(x.no||'').trim()===no)||(nm&&normalizeClassNameV62(x.name)===nm));
     }
     if(s){
       if(student?.no!==undefined)s.no=String(student.no).trim();
@@ -1477,7 +1518,45 @@ window.FairSingStateBridgeV23={
 
 
 function ensurePhase2(){
- S.questionBank=S.questionBank||[];S.scoreImports=S.scoreImports||[];S.materials=S.materials||[];S.schedule=S.schedule||[];S.calendarEvents=S.calendarEvents||[];S.phase2=S.phase2||{currentRhythm:null,currentSight:null};
+ S.questionBank=S.questionBank||[];S.scoreImports=S.scoreImports||[];S.materials=S.materials||[];S.schedule=S.schedule||[];S.calendarEvents=S.calendarEvents||[];S.phase2=S.phase2||{currentRhythm:null,currentSight:null,
+  replaceRoster(className,students){
+    const n=String(className||'').trim();
+    if(!n)return {total:0,replaced:false};
+    let c=(S.classes||[]).find(x=>String(x.name||'').trim()===n);
+    if(!c){
+      c={id:crypto.randomUUID(),name:n,students:[]};
+      S.classes.push(c);
+    }
+    const cleaned=[],used=new Set();
+    (students||[]).forEach((s,i)=>{
+      const name=String(s?.name||'').trim();
+      if(!name)return;
+      let no=String(s?.no||'').trim();
+      if(!no||used.has(no)){
+        let x=1;while(used.has(String(x).padStart(2,'0')))x++;
+        no=String(x).padStart(2,'0');
+      }
+      used.add(no);
+      cleaned.push({id:s?.id||crypto.randomUUID(),no,name});
+    });
+    c.students=cleaned.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));
+    selClass=c.id;
+    try{save()}catch(e){}
+    try{render()}catch(e){}
+    window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}));
+    return {total:c.students.length,replaced:true};
+  },
+  buildPromotionPlan(sourceYear,targetYear){
+    const sy=String(sourceYear||'').trim(),ty=String(targetYear||'').trim();
+    const result={sourceYear:sy,targetYear:ty,promoted:[],graduated:[],unchanged:[]};
+    (S.classes||[]).forEach(c=>{
+      const p=promoteClassNameV64(c.name);
+      if(p.status==='promoted')result.promoted.push({from:p.from,to:p.to,count:(c.students||[]).length});
+      else if(p.status==='graduated')result.graduated.push({className:c.name,count:(c.students||[]).length});
+      else result.unchanged.push({className:c.name,count:(c.students||[]).length});
+    });
+    return result;
+  }};
 }
 
 const norm=x=>({...structuredClone(D),...x,settings:{...D.settings,...(x?.settings||{})}}),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1507,7 +1586,7 @@ window.googleLogin=async()=>{
 };window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
-function render(){ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
+function render(){dedupeClassesV62();ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
 window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}))};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){const old=S.classes.find(c=>c.id===id)?.name||'';S.classes=S.classes.filter(c=>c.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:old}}))}};
 function renderClasses(){let c=S.classes.find(x=>x.id===selClass)||S.classes[0];if(c)selClass=c.id;classList.innerHTML=S.classes.map(x=>`<div class="row between" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn ${x.id===selClass?'primary':'ghost'}" onclick="pickClass('${x.id}')">${esc(x.name)}（${x.students.length}）</button><button class="btn danger" onclick="delClass('${x.id}')">刪除</button></div>`).join('')||'尚無班級';studentTitle.textContent=c?c.name:'學生';studentList.innerHTML=c?.students.length?`<table><tr><th>座號</th><th>姓名</th><th></th></tr>${c.students.map(s=>`<tr><td>${esc(s.no)}</td><td>${esc(s.name||'未填')}</td><td><button class="btn danger" onclick="delStudent('${s.id}')">刪除</button></td></tr>`).join('')}</table>`:'尚無學生'}
 window.openStudent=()=>{if(!selClass)return alert('請先建立班級');modalOpen('新增學生','<label>座號</label><input id="sno"><label>姓名（選填）</label><input id="sname"><button class="btn primary" style="margin-top:12px" onclick="addStudent()">新增</button>')};window.addStudent=()=>{let c=S.classes.find(x=>x.id===selClass),no=sno.value.trim();if(!c||!no)return;c.students.push({id:crypto.randomUUID(),no,name:sname.value.trim()});c.students.sort((a,b)=>String(a.no).localeCompare(String(b.no),'zh-Hant',{numeric:true}));closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}))};window.delStudent=id=>{let c=S.classes.find(x=>x.id===selClass);if(c&&confirm('刪除學生？')){c.students=c.students.filter(s=>s.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:c.name}}))}};
@@ -4970,7 +5049,16 @@ window.mergeTiedPlaybackV27=function(score){
  </div>
 
  <div class="v40-io">
-<button id="v40ImportClass" type="button">📥 匯入班級資訊</button>
+
+<div id="v64ImportModeBox" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 12px">
+  <label style="font-weight:800">學生名單匯入模式</label>
+  <select id="v64ImportMode" style="min-height:42px;border:1px solid #ccd8df;border-radius:10px;padding:7px 10px">
+    <option value="merge">合併匯入｜保留原名單</option>
+    <option value="replace">覆蓋本班名單｜以新名單為準</option>
+  </select>
+  <button id="v64PromoteYear" type="button">⬆️ 學年度升級</button>
+</div>
+<div id="v63MergePolicy" style="margin:8px 0;font-size:13px;font-weight:800;color:#587080">📥 名單可選「合併」或「覆蓋本班」；成績仍採不覆蓋原分數</div><button id="v40ImportClass" type="button">📥 匯入班級資訊</button>
 <button id="v40ImportExcel" class="excel" type="button">📗 Excel 匯入學生／成績</button>
 <button id="v40ExportExcel" class="excel" type="button">📗 Excel 匯出成績</button>
 <input id="v40File" type="file" accept=".xlsx,.xls,.csv" hidden>
@@ -5244,7 +5332,7 @@ window.mergeTiedPlaybackV27=function(score){
     getStudents:()=>state.students.map(s=>({...s})),
    getSnapshot:()=>JSON.parse(JSON.stringify(state)),
    importScoresFromRows:(rows)=>{
-     let matched=0;
+     let matched=0,filled=0,conflicts=0;
      (rows||[]).forEach(r=>{
        const keys=Object.keys(r||{});
        const getVal=(names)=>{
@@ -5253,19 +5341,26 @@ window.mergeTiedPlaybackV27=function(score){
        };
        const no=String(getVal(['座號','號碼','no','number'])??'').trim();
        const name=String(getVal(['姓名','學生姓名','name'])??'').trim();
-       const s=state.students.find(x=>(no&&String(x.no).trim()===no)||(!no&&name&&String(x.name).trim()===name));
-       if(!s)return;
-       state.scores[s.id]=state.scores[s.id]||{};
+       const stu=state.students.find(x=>(no&&String(x.no).trim()===no)||(!no&&name&&String(x.name).trim()===name));
+       if(!stu)return;
+       state.scores[stu.id]=state.scores[stu.id]||{};
        state.columns.forEach(c=>{
          const k=keys.find(k=>String(k).trim()===String(c.name).trim());
-         if(k!==undefined && String(r[k]??'').trim()!==''){
-           state.scores[s.id][c.id]=r[k];
+         if(k===undefined)return;
+         const incoming=String(r[k]??'').trim();
+         if(incoming==='')return;
+         const current=String(state.scores[stu.id]?.[c.id]??'').trim();
+         if(current===''){
+           state.scores[stu.id][c.id]=r[k];
+           filled++;
+         }else if(current!==incoming){
+           conflicts++;
          }
        });
        matched++;
      });
      saveAll();render();
-     return matched;
+     return {matched,filled,conflicts};
    },
    exportRows:()=>{
      const heads=['班級','座號','姓名',...state.columns.map(c=>c.name),'平時成績','定期評量','學期成績'];
@@ -5429,6 +5524,7 @@ function findKey(obj,names){
 }
 function parseRows(ws){return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false})}
 function currentClass(){return $('v39ClassSelect')?.value||$('gbClass')?.value||''}
+function importMode(){return document.getElementById('v64ImportMode')?.value||'merge'}
 
 function selectClass(name){
  const n=norm(name); if(!n)return;
@@ -5455,10 +5551,19 @@ function normalizeStudentRows(rows){
 
 function importClassInfo(rows){
  const ck=findKey(rows[0]||{},['班級','class','班別']);
+ const bridge=window.FairSingRosterBridgeV57;
+ const modeNow=importMode();
+
  if(!ck){
    const cls=currentClass();
-   const result=window.FairSingGradebookCoreV53?.addStudentsBatch?.(normalizeStudentRows(rows));
-   return {classes:1,students:result?.added||0,message:`已匯入到 ${cls}`};
+   const students=normalizeStudentRows(rows);
+   if(modeNow==='replace'){
+     const r=bridge?.replaceRoster?.(cls,students)||{total:0};
+     window.FairSingGradebookCoreV53?.reload?.();
+     return {classes:1,students:r.total,skipped:0,replaced:true,message:`已覆蓋 ${cls} 名單`};
+   }
+   const result=window.FairSingGradebookCoreV53?.addStudentsBatch?.(students);
+   return {classes:1,students:result?.added||0,skipped:result?.skipped||0,replaced:false,message:`已合併到 ${cls}`};
  }
 
  const grouped=new Map();
@@ -5469,27 +5574,44 @@ function importClassInfo(rows){
    grouped.get(cls).push(r);
  });
 
- let added=0;
- const bridge=window.FairSingRosterBridgeV57;
+ let added=0,skipped=0;
  grouped.forEach((rs,cls)=>{
    bridge?.ensureClass?.(cls);
-   const result=bridge?.addStudents?.(cls,normalizeStudentRows(rs));
-   added+=result?.added||0;
+   const students=normalizeStudentRows(rs);
+   if(modeNow==='replace'){
+     const result=bridge?.replaceRoster?.(cls,students);
+     added+=result?.total||0;
+   }else{
+     const result=bridge?.addStudents?.(cls,students);
+     added+=result?.added||0;
+     skipped+=result?.skipped||0;
+   }
  });
  bridge?.selectClass?.(currentClass());
  window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:currentClass()}}));
  window.FairSingGradebookCoreV53?.reload?.();
- return {classes:grouped.size,students:added,message:`已處理 ${grouped.size} 個班級`};
-}
 
+ return {
+   classes:grouped.size,
+   students:added,
+   skipped,
+   replaced:modeNow==='replace',
+   message:modeNow==='replace'?`已覆蓋 ${grouped.size} 個班級名單`:`已合併 ${grouped.size} 個班級`
+ };
+}
 function importCurrentClassScores(rows){
  const core=window.FairSingGradebookCoreV53;
  if(!core)throw new Error('成績管理核心尚未載入');
-
  const students=normalizeStudentRows(rows);
- const addResult=core.addStudentsBatch(students);
- const matched=core.importScoresFromRows(rows);
- return {added:addResult?.added||0,matched};
+ const addResult=core.addStudentsBatch(students)||{};
+ const scoreResult=core.importScoresFromRows(rows)||{};
+ return {
+   added:addResult.added||0,
+   skippedStudents:addResult.skipped||0,
+   matched:scoreResult.matched||0,
+   filled:scoreResult.filled||0,
+   conflicts:scoreResult.conflicts||0
+ };
 }
 
 async function handleFile(file){
@@ -5501,10 +5623,24 @@ async function handleFile(file){
 
  if(mode==='class'){
    const r=importClassInfo(rows);
-   alert(`班級資訊匯入完成。\n${r.message}\n新增學生：${r.students} 人`);
+   alert(
+     (r.replaced?'學生名單覆蓋完成。':'班級資訊合併完成。')+
+     `\n${r.message}`+
+     `\n匯入學生：${r.students} 人`+
+     (r.replaced?'':`\n保留既有／重複資料：${r.skipped||0} 筆`)+
+     `\n\n${r.replaced?'目前學年度的該班名單已以新檔為準；舊學年度資料不受影響。':'原有班級與學生資料未被覆蓋。'}`
+   );
  }else{
    const r=importCurrentClassScores(rows);
-   alert(`Excel 匯入完成。\n目前班級新增學生：${r.added} 人\n成功對應成績：${r.matched} 人`);
+   alert(
+     `Excel 合併匯入完成。`+
+     `\n新增學生：${r.added} 人`+
+     `\n既有學生保留：${r.skippedStudents} 人`+
+     `\n成功對應學生：${r.matched} 人`+
+     `\n補入空白成績：${r.filled} 格`+
+     `\n衝突未覆蓋：${r.conflicts} 格`+
+     `\n\n原有成績不會被覆蓋。`
+   );
  }
 }
 
@@ -6121,6 +6257,106 @@ function update(){
 window.addEventListener('fairsing-roster-changed',()=>setTimeout(update,100));
 document.addEventListener('DOMContentLoaded',()=>setTimeout(update,600));
 setInterval(update,1200);
+})();
+</script>
+
+<script id="v62-class-dedupe">
+(function(){
+ function fix(){
+   try{
+     const b=window.FairSingRosterBridgeV57;
+     if(!b)return;
+     const r=b.dedupeClasses?.();
+     if(r?.before>r?.after){
+       window.dispatchEvent(new CustomEvent('fairsing-roster-changed'));
+     }
+   }catch(e){console.warn('v62 dedupe',e)}
+ }
+ document.addEventListener('DOMContentLoaded',()=>setTimeout(fix,900));
+ setTimeout(fix,1600);
+})();
+</script>
+
+<script id="v64-year-promotion">
+(function(){
+const $=id=>document.getElementById(id);
+
+function promoteName(name){
+ const n=String(name||'').trim();
+ if(!/^[789]\d{2}$/.test(n))return {from:n,to:n,status:'unchanged'};
+ if(n[0]==='7')return {from:n,to:'8'+n.slice(1),status:'promoted'};
+ if(n[0]==='8')return {from:n,to:'9'+n.slice(1),status:'promoted'};
+ return {from:n,to:n,status:'graduated'};
+}
+
+function getClasses(){
+ return window.FairSingRosterBridgeV57?.listClasses?.()||[];
+}
+
+function boot(){
+ const btn=$('v64PromoteYear'); if(!btn)return;
+ btn.onclick=()=>{
+   const y=Number($('gbYear')?.value||0);
+   if(!Number.isFinite(y)||!y)return alert('請先設定目前學年度。');
+   const next=y+1;
+   const classes=getClasses();
+   if(!classes.length)return alert('目前沒有班級可以升級。');
+
+   const promoted=[],graduated=[],unchanged=[];
+   classes.forEach(c=>{
+     const p=promoteName(c.name);
+     if(p.status==='promoted')promoted.push({...p,count:c.students?.length||0});
+     else if(p.status==='graduated')graduated.push({className:c.name,count:c.students?.length||0});
+     else unchanged.push({className:c.name,count:c.students?.length||0});
+   });
+
+   const preview=[
+     `學年度：${y} → ${next}`,
+     '',
+     ...promoted.map(x=>`${x.from} → ${x.to}（${x.count}人）`),
+     ...graduated.map(x=>`${x.className} → 畢業封存（${x.count}人）`)
+   ].join('\n');
+
+   if(!confirm(preview+'\n\n建立下一學年度班級？\n目前學年度資料會完整保留。'))return;
+
+   // Store a year-specific roster snapshot; do not destroy current portal classes.
+   const key='FairSingYearRostersV64';
+   let store={};try{store=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}
+   store[String(y)]=store[String(y)]||{};
+   classes.forEach(c=>store[String(y)][c.name]=c.students||[]);
+   store[String(next)]=store[String(next)]||{};
+
+   promoted.forEach(p=>{
+     const src=classes.find(c=>String(c.name)===p.from);
+     store[String(next)][p.to]=(src?.students||[]).map((s,i)=>({
+       id:'y'+next+'_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6),
+       no:String(s.no||'').trim(),
+       name:String(s.name||'').trim()
+     }));
+   });
+
+   unchanged.forEach(p=>{
+     const src=classes.find(c=>String(c.name)===p.className);
+     store[String(next)][p.className]=(src?.students||[]).map((s,i)=>({
+       id:'y'+next+'_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6),
+       no:String(s.no||'').trim(),
+       name:String(s.name||'').trim()
+     }));
+   });
+
+   store[String(y)].__graduates=graduated;
+   localStorage.setItem(key,JSON.stringify(store));
+
+   alert(
+     `下一學年度 ${next} 已建立升級名冊。\n`+
+     `升級班級：${promoted.length} 班\n`+
+     `畢業封存：${graduated.length} 班\n\n`+
+     `舊學年度資料仍保留。`
+   );
+ };
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+else boot();
 })();
 </script>
 </body></html>
