@@ -1651,11 +1651,30 @@ function renderOrder(){
  }).join('')
 }
 function openWheel(c,count){
- wheelState={classId:c.id,targetCount:count,remaining:secureShuffle(c.students),drawn:[],rotation:0,spinning:false};
- wheelSubtitle.textContent=`${c.name}｜抽出 ${count} 人`;
- wheelResults.innerHTML='';wheelMessage.textContent='按下開始，看看第一位幸運考生！';
- wheelStartBtn.classList.remove('hidden');wheelApplyBtn.classList.add('hidden');wheelAgainBtn.classList.add('hidden');
- buildWheel();wheelModal.classList.add('open');
+ // Wheel mode is a full no-repeat cycle: everyone is eligible once.
+ wheelState={
+   classId:c.id,
+   targetCount:c.students.length,
+   remaining:secureShuffle(c.students),
+   drawn:[],
+   rotation:0,
+   spinning:false
+ };
+ wheelSubtitle.textContent=`${c.name}｜全班 ${c.students.length} 人｜不重複抽籤`;
+ wheelResults.innerHTML='';
+ wheelMessage.textContent='按下開始；抽過的號碼會自動從輪盤移除。';
+ wheelStartBtn.classList.remove('hidden');
+ wheelStartBtn.disabled=false;
+ wheelStartBtn.textContent=`🎡 開始抽籤（${c.students.length} 人）`;
+ wheelApplyBtn.classList.add('hidden');
+ wheelAgainBtn.classList.add('hidden');
+
+ wheelDisc.style.transition='none';
+ wheelDisc.style.transform='rotate(0deg)';
+ buildWheel();
+ void wheelDisc.offsetWidth;
+ wheelDisc.style.transition='';
+ wheelModal.classList.add('open');
 }
 function buildWheel(){
  const items=wheelState.remaining.length?wheelState.remaining:[{no:'✓',name:'完成'}];
@@ -1668,21 +1687,72 @@ function buildWheel(){
 }
 window.spinNext=()=>{
  if(wheelState.spinning||!wheelState.remaining.length)return;
- wheelState.spinning=true;wheelStartBtn.disabled=true;wheelMessage.textContent='輪盤高速旋轉中……';
+
+ wheelState.spinning=true;
+ wheelStartBtn.disabled=true;
+ wheelMessage.textContent='輪盤高速旋轉中……';
+
+ // Winner is chosen exactly once from REMAINING students only.
  const winnerIndex=Math.floor(Math.random()*wheelState.remaining.length);
+ const winner=wheelState.remaining[winnerIndex];
  const segment=360/wheelState.remaining.length;
+
+ // Reset only the visual rotation coordinate so the pointer geometry is accurate.
+ // This does NOT reset the draw pool, drawn history, or remaining students.
+ wheelDisc.style.transition='none';
+ wheelDisc.style.transform='rotate(0deg)';
+ void wheelDisc.offsetWidth;
+
  const target=360*5+(360-(winnerIndex+.5)*segment);
- wheelState.rotation+=target;
- wheelDisc.style.transform=`rotate(${wheelState.rotation}deg)`;
+ wheelState.rotation=target;
+ wheelDisc.style.transition='';
+ wheelDisc.style.transform=`rotate(${target}deg)`;
+
  setTimeout(()=>{
-  const winner=wheelState.remaining.splice(winnerIndex,1)[0];
-  wheelState.drawn.push(winner);wheelState.spinning=false;wheelStartBtn.disabled=false;
-  const chip=document.createElement('div');chip.className='wheel-chip';chip.textContent=`${wheelState.drawn.length}. ${winner.no}號 ${winner.name||''}`;wheelResults.appendChild(chip);
-  wheelMessage.textContent=`🎉 第 ${wheelState.drawn.length} 位：${winner.no}號 ${winner.name||''}`;
+  // Remove the exact winner from the remaining pool.
+  // Once removed, this seat number cannot be drawn again until a full reset.
+  const removed=wheelState.remaining.splice(winnerIndex,1)[0];
+  wheelState.drawn.push(removed);
+
+  wheelState.spinning=false;
+  wheelStartBtn.disabled=false;
+
+  const chip=document.createElement('div');
+  chip.className='wheel-chip';
+  chip.textContent=`${wheelState.drawn.length}. ${removed.no}號 ${removed.name||''}`;
+  wheelResults.appendChild(chip);
+
+  wheelMessage.textContent=`🎉 第 ${wheelState.drawn.length} 位：${removed.no}號 ${removed.name||''}`;
+
+  // Redraw wheel using only students who have NOT been drawn.
+  wheelDisc.style.transition='none';
+  wheelDisc.style.transform='rotate(0deg)';
+  wheelState.rotation=0;
   buildWheel();
-  if(wheelState.drawn.length>=wheelState.targetCount){
-   wheelStartBtn.classList.add('hidden');wheelApplyBtn.classList.remove('hidden');wheelAgainBtn.classList.remove('hidden');wheelMessage.textContent='🎊 指定人數已全部抽出！';
-  }else wheelStartBtn.textContent='🎡 抽下一位';
+  void wheelDisc.offsetWidth;
+  wheelDisc.style.transition='';
+
+  if(wheelState.remaining.length===0){
+    // All students have now been drawn exactly once.
+    wheelStartBtn.classList.add('hidden');
+    wheelApplyBtn.classList.remove('hidden');
+    wheelAgainBtn.classList.remove('hidden');
+    wheelMessage.textContent='🎊 全班都已抽完，所有號碼皆已抽過一次！';
+
+    setTimeout(()=>{
+      const reset=confirm(
+        `全班 ${wheelState.drawn.length} 人都已抽完。\n\n要重新放回所有號碼，開始新一輪嗎？`
+      );
+      if(reset){
+        const c=S.classes.find(x=>x.id===wheelState.classId);
+        if(c)openWheel(c,c.students.length);
+      }
+      // If user chooses Cancel/No, preserve the complete drawn history and results.
+    },250);
+  }else{
+    wheelStartBtn.classList.remove('hidden');
+    wheelStartBtn.textContent=`🎡 抽下一位（剩 ${wheelState.remaining.length} 人）`;
+  }
  },3900);
 };
 window.applyWheelOrder=()=>{
@@ -1693,7 +1763,11 @@ window.applyWheelOrder=()=>{
  orderClass.value=c.id;closeWheel();save();alert('輪盤抽籤結果已套用並儲存。');
 };
 window.restartWheel=()=>{
- const c=S.classes.find(x=>x.id===wheelState.classId);if(c)openWheel(c,wheelState.targetCount);
+ const c=S.classes.find(x=>x.id===wheelState.classId);
+ if(!c)return;
+ if(confirm('確定要清除本輪抽籤紀錄，重新放回所有號碼嗎？')){
+   openWheel(c,c.students.length);
+ }
 };
 window.closeWheel=()=>{if(wheelState.spinning&&!confirm('輪盤正在旋轉，要中止嗎？'))return;wheelModal.classList.remove('open')};
 
