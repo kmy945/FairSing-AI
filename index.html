@@ -5555,22 +5555,17 @@ else setTimeout(bind,80);
   </div>
   <div class="v46BatchActions">
    <button id="v46BatchCancel" type="button">取消</button>
-   <button id="v46BatchConfirm" type="button" onclick="return FairSingBatchHardWriteV50()">加入目前班級</button>
+   <button id="v46BatchConfirm" type="button">加入目前班級</button>
   </div>
  </div>
 </div>
 
 
-<script id="v46-batch-script">
-(function(){
+<script id="v46-batch-script">(function(){
 const $=id=>document.getElementById(id);
-
-function currentClass(){
- return $('v39ClassSelect')?.value || $('gbClass')?.value || '';
-}
+function currentClass(){return $('v39ClassSelect')?.value||$('gbClass')?.value||''}
 function parseLine(line,idx){
- line=String(line||'').trim();
- if(!line)return null;
+ line=String(line||'').trim(); if(!line)return null;
  let m=line.match(/^(\d{1,3})[\s,，、\t]+(.+)$/);
  if(m)return {no:String(m[1]).padStart(2,'0'),name:m[2].trim()};
  m=line.match(/^(\d{1,3})([\u4e00-\u9fffA-Za-z].+)$/);
@@ -5578,53 +5573,39 @@ function parseLine(line,idx){
  return {no:String(idx+1).padStart(2,'0'),name:line};
 }
 function parsedRows(){
- const lines=$('v46BatchText').value.split(/\r?\n/).filter(x=>x.trim());
- return lines.map((x,i)=>parseLine(x,i)).filter(x=>x&&x.name);
+ const ta=$('v46BatchText'); if(!ta)return [];
+ return ta.value.split(/\r?\n/).filter(x=>x.trim()).map((x,i)=>parseLine(x,i)).filter(x=>x&&x.name);
 }
-function updateCount(){
- $('v46BatchCount').textContent=parsedRows().length;
-}
+function updateCount(){$('v46BatchCount').textContent=String(parsedRows().length)}
 function openModal(){
  $('v46BatchClass').textContent=currentClass()||'未選擇';
- $('v46BatchText').value='';
- $('v46BatchCount').textContent='0';
- $('v46BatchModal').classList.add('open');
- setTimeout(()=>$('v46BatchText').focus(),50);
+ $('v46BatchText').value=''; $('v46BatchCount').textContent='0';
+ $('v46BatchModal').classList.add('open'); setTimeout(()=>$('v46BatchText').focus(),30);
 }
-function closeModal(){
- $('v46BatchModal').classList.remove('open');
-}
+function closeModal(){$('v46BatchModal').classList.remove('open')}
 function addBatch(){
- const rows=parsedRows();
- if(!rows.length)return alert('請先貼上學生名單。');
- if(!window.FairSingGB47)return alert('成績管理尚未完成載入，請關閉後重新進入成績管理。');
-
- const result=window.FairSingGB47.addStudentsBatch(rows);
- closeModal();
-
- const countEl=document.getElementById('gbCount');
- if(countEl) countEl.textContent=String(result.total);
-
- alert(
-   `已加入 ${result.added} 位學生`+
-   (result.skipped?`，略過 ${result.skipped} 筆重複／空白資料`:'')+
-   `。\n目前班級共 ${result.total} 人。`
- );
+ try{
+   const rows=parsedRows();
+   if(!rows.length){alert('請先貼上學生名單。');return}
+   if(!window.FairSingGB47?.addStudentsBatch){alert('成績管理核心尚未載入，請重新進入成績管理。');return}
+   const result=window.FairSingGB47.addStudentsBatch(rows);
+   closeModal();
+   alert('批次加入完成。\\n新增：'+result.added+' 人'+(result.skipped?'\\n略過重複／空白：'+result.skipped+' 人':'')+'\\n目前班級共：'+result.total+' 人');
+ }catch(err){console.error(err);alert('批次加入失敗：'+(err?.message||err))}
 }
 function bind(){
- const old=$('v46BatchStudents');
- if(!old)return;
- const btn=old.cloneNode(true);
- old.replaceWith(btn);
- btn.onclick=openModal;
- $('v46BatchText').addEventListener('input',updateCount);
- $('v46BatchCancel').onclick=closeModal;
- $('v46BatchConfirm').onclick=addBatch;
- $('v46BatchModal').onclick=e=>{if(e.target===$('v46BatchModal'))closeModal()};
+ const open=$('v46BatchStudents'), confirm=$('v46BatchConfirm'), cancel=$('v46BatchCancel'), modal=$('v46BatchModal'), ta=$('v46BatchText');
+ if(!open||!confirm||!cancel||!modal||!ta)return;
+ // Single authoritative handlers. No clone, no inline onclick, no later override.
+ open.onclick=openModal;
+ confirm.onclick=addBatch;
+ cancel.onclick=closeModal;
+ ta.oninput=updateCount;
+ modal.onclick=e=>{if(e.target===modal)closeModal()};
+ confirm.dataset.handler='v51-single';
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-})();
-</script>
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();</script>
 
 
 <script id="v48-class-recovery">
@@ -5706,95 +5687,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 else setTimeout(boot,120);
 })();
 </script>
-
-
-<script id="v50-batch-hardwrite">
-(function(){
-const STOREKEY='FairSingGradebookV33';
-const $=id=>document.getElementById(id);
-
-function parseLine(line,idx){
- line=String(line||'').trim();
- if(!line)return null;
- let m=line.match(/^(\d{1,3})[\s,，、\t]+(.+)$/);
- if(m)return {no:String(m[1]).padStart(2,'0'),name:m[2].trim()};
- m=line.match(/^(\d{1,3})([\u4e00-\u9fffA-Za-z].+)$/);
- if(m)return {no:String(m[1]).padStart(2,'0'),name:m[2].trim()};
- return {no:String(idx+1).padStart(2,'0'),name:line};
-}
-function parsedRows(){
- const ta=$('v46BatchText');
- if(!ta)return [];
- return ta.value.split(/\r?\n/).filter(x=>x.trim()).map((x,i)=>parseLine(x,i)).filter(x=>x&&x.name);
-}
-function contextKey(){
- const year=$('gbYear')?.value||'115';
- const term=$('gbTerm')?.value||'1';
- const cls=$('v39ClassSelect')?.value||$('gbClass')?.value||'706';
- const subject=$('gbSubject')?.value||'音樂';
- return [year,term,cls,subject].join('|');
-}
-function readStore(){
- try{return JSON.parse(localStorage.getItem(STOREKEY)||'{}')}catch(e){return {}}
-}
-function closeModal(){
- $('v46BatchModal')?.classList.remove('open');
-}
-window.FairSingBatchHardWriteV50=function(){
- try{
-   const rows=parsedRows();
-   if(!rows.length){alert('請先貼上學生名單。');return false;}
-
-   const all=readStore();
-   const key=contextKey();
-   const book=all[key]||{students:[],columns:[],scores:{}};
-   if(!Array.isArray(book.students))book.students=[];
-   if(!Array.isArray(book.columns))book.columns=[];
-   if(!book.scores||typeof book.scores!=='object')book.scores={};
-
-   let added=0,skipped=0;
-   rows.forEach((r,i)=>{
-     const same=book.students.some(s=>
-       (r.no && String(s.no??'').trim()===r.no) ||
-       String(s.name??'').trim()===r.name
-     );
-     if(same){skipped++;return;}
-     book.students.push({
-       id:'s'+Date.now()+i+Math.random().toString(36).slice(2,7),
-       no:r.no,
-       name:r.name
-     });
-     added++;
-   });
-
-   all[key]=book;
-   localStorage.setItem(STOREKEY,JSON.stringify(all));
-
-   closeModal();
-
-   // Ask all known gradebook bridges to reload; whichever exists will refresh the table.
-   try{window.FairSingGB44?.load?.()}catch(e){}
-   try{window.FairSingGB40?.load?.()}catch(e){}
-   try{window.FairSingGB39?.loadContext?.()}catch(e){}
-   try{window.FairSingRefreshClassesV48?.()}catch(e){}
-
-   const count=document.getElementById('gbCount');
-   if(count)count.textContent=String(book.students.length);
-
-   alert(
-     '批次加入完成。\\n'+
-     '新增：'+added+' 人'+
-     (skipped?'\\n略過重複：'+skipped+' 人':'')+
-     '\\n目前班級共：'+book.students.length+' 人'
-   );
-   return false;
- }catch(err){
-   console.error(err);
-   alert('批次加入失敗：'+(err?.message||err));
-   return false;
- }
-};
-})();
-</script>
-
 </body></html>
