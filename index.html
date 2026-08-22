@@ -508,7 +508,19 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
   }
 }
 </style>
-</head><body>
+<style id="v84-overlay-fix">
+#v83RecorderPair .v84wrap{position:relative;width:100%;max-width:165px;margin:auto}
+#v83RecorderPair .v84wrap img{display:block;width:100%;height:auto}
+.v84h{position:absolute;transform:translate(-50%,-50%);border-radius:50%;box-sizing:border-box;z-index:5}
+.v84h.closed{background:#0aa57b;border:2px solid #073b31}
+.v84h.half{background:linear-gradient(90deg,#0aa57b 50%,transparent 50%);border:2px solid #073b31}
+.v84front{left:50%;width:17%;aspect-ratio:1}
+.v84f1{top:59%}.v84f2{top:64.2%}.v84f3{top:69.5%}.v84f4{top:75%}.v84f5{top:80.2%}.v84f6{top:85.5%}
+.v84f7a{top:91%;left:45%;width:12%;aspect-ratio:1}.v84f7b{top:91%;left:56%;width:12%;aspect-ratio:1}
+.v84thumb{left:50%;top:64%;width:20%;aspect-ratio:1}
+@media(max-width:900px){#v83RecorderPair .v84wrap{max-width:210px}}
+@media(max-width:520px){#v83RecorderPair .v84wrap{max-width:150px}}
+</style></head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
@@ -9579,4 +9591,24 @@ else retry();
 document.addEventListener('click',()=>setTimeout(place,80),true);
 })();
 </script>
-</body></html>
+<script id="v84-renderer">
+(function(){
+function st(a,i){let v=a&&a[i];if(v===0||v===false||v==='0'||v==='open'||v==null)return'open';if(v===.5||v==='0.5'||v==='half')return'half';return'closed'}
+function h(c,x){return x==='open'?'':'<i class="v84h '+c+' '+x+'"></i>'}
+function img(kind){
+ try{
+  let q=kind==='front'?recorderFrontSVG([0,0,0,0,0,0,0,0]):recorderBackSVG([0,0,0,0,0,0,0,0]);
+  let m=String(q).match(/<img[^>]+src=["']([^"']+)["']/i);if(m)return m[1]
+ }catch(e){}
+ return''
+}
+function front(a){let o='<div class="v84wrap"><img src="'+img('front')+'" alt="中音直笛正面">';for(let i=1;i<=6;i++)o+=h('v84front v84f'+i,st(a,i));let x=st(a,7);if(x!=='open'){o+=h('v84f7a',x)+h('v84f7b',x)}return o+'</div>'}
+function back(a){return '<div class="v84wrap"><img src="'+img('back')+'" alt="中音直笛背面">'+h('v84thumb',st(a,0))+'</div>'}
+window.renderV84=function(n){let a=(typeof finger!=='undefined'&&finger[n])?finger[n]:[];let f=document.getElementById('v83Front'),b=document.getElementById('v83Back');if(f)f.innerHTML=front(a);if(b)b.innerHTML=back(a)}
+let old=window.updateV83FingeringCard;
+window.updateV83FingeringCard=function(n){if(old)old(n);renderV84(n)}
+function refresh(){let n=(typeof currentManualNote!=='undefined'&&currentManualNote)||'C5';if(document.getElementById('v83FingerCard'))renderV84(n)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,250));else setTimeout(refresh,250);
+document.addEventListener('click',()=>setTimeout(refresh,100),true)
+})();
+</script></body></html>
