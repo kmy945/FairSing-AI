@@ -599,6 +599,56 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 #app .muted{color:#65747a}.official-badge{background:#f4e6bd!important;color:#6b5122!important;border-color:#d1b46e!important}
 @media(max-width:700px){.hall-login-actions{width:min(46vw,350px);bottom:8.7%}}
 </style>
+<style id='v98-tablet-shell-fix'>
+/* v98 平板外層導覽固定高度修正：不改功能，只修 shell/nav 版面 */
+@media (max-width: 1200px){
+  #app .shell{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-rows:auto minmax(0,auto) !important;
+    align-items:start !important;
+    min-height:0 !important;
+  }
+  #app .shell > nav{
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    align-self:start !important;
+    gap:6px !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    padding:8px !important;
+    border-right:0 !important;
+    border-bottom:1px solid #ddcfb5 !important;
+    border-radius:0 0 16px 16px !important;
+  }
+  #app .shell > nav .nav{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:max-content !important;
+    height:auto !important;
+    min-height:44px !important;
+    padding:10px 12px !important;
+    align-self:center !important;
+  }
+  #app .shell > main{
+    min-width:0 !important;
+    min-height:0 !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:14px !important;
+  }
+}
+@media (max-width: 760px){
+  #app .shell > main{padding:10px !important}
+  #app .shell > nav .nav{min-height:42px !important;padding:9px 11px !important}
+}
+</style>
 </head><body>
 <div id="login" class="login hall-login" aria-label="FairSing AI"><div class="hall-login-actions"><button class="hall-hit google" onclick="googleLogin()" aria-label="使用 Google 登入"></button><button class="hall-hit guest" onclick="guestLogin()" aria-label="訪客試用"></button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>

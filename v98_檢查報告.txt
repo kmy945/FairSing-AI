@@ -1,0 +1,18 @@
+FairSing AI v98｜平板導覽長江空白根因修正版
+
+PASS｜平板shell單欄
+PASS｜nav固定橫列
+PASS｜nav按鈕不再拉高
+PASS｜原生go保留
+PASS｜DRUMLAB頁保留
+PASS｜DRUMLAB loader保留
+PASS｜Dashboard保留
+PASS｜直笛保留
+PASS｜Assessment保留
+PASS｜音樂殿堂主題保留
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+根因：平板寬度下 FairSing 外層 shell/nav 仍會跟主內容列一起伸展；DRUMLAB iframe 高度把 nav grid cell 拉高。
+修正：<=1200px 時外層 shell 固定為單欄兩列，nav 為內容高度橫向捲動，main 置於下一列。
+未修改任何登入、同步、切頁、直笛、Assessment 或 DRUMLAB 功能邏輯。
