@@ -527,7 +527,25 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 .v84f7a{top:85.05%!important;left:44.3%!important}.v84f7b{top:85.05%!important;left:55.7%!important}
 .v84thumb{top:53.15%!important;left:50%!important}
 .v84front{width:14.5%!important}.v84f7a,.v84f7b{width:9.5%!important}.v84thumb{width:16.5%!important}
-</style></head><body>
+</style>
+<style id="v87-interactive-classroom-style">
+#interactive{padding-bottom:24px}
+.interactive-hero{background:linear-gradient(135deg,#0c527d,#0b8f8d)}
+.interactive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.interactive-card{display:grid;grid-template-columns:145px minmax(0,1fr);min-width:0;overflow:hidden;background:#fff;border:1px solid var(--line,#d8e3e8);border-radius:20px}
+.interactive-icon{display:flex;align-items:center;justify-content:center;min-height:250px;font-size:62px;background:linear-gradient(160deg,#eef8f6,#f8f2df)}
+.interactive-content{padding:22px;min-width:0}
+.interactive-source{font-size:12px;font-weight:900;letter-spacing:.08em;color:#6b7d87}
+.interactive-content h2{font-size:26px;margin:6px 0 10px}
+.interactive-content p{line-height:1.7;color:#536b78}
+.interactive-tags{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 18px}
+.interactive-tags span{padding:5px 9px;border-radius:999px;background:#eef7f7;border:1px solid #d7e7e7;font-size:13px;font-weight:800}
+.interactive-link{display:inline-flex;align-items:center;justify-content:center;min-height:46px;text-decoration:none}
+.interactive-footnote{margin-top:16px;padding:12px 15px;border-radius:13px;background:#f5f9fa;border:1px solid #dce7ea;color:#617580}
+@media(max-width:880px){.interactive-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.interactive-card{grid-template-columns:1fr}.interactive-icon{min-height:100px}.interactive-link{width:100%}}
+</style>
+</head><body>
 <div id="login" class="login"><div class="box"><div class="logo">🎤</div><h1>FairSing AI v3.0</h1><h3>智慧音樂學習與評量平台</h3><p class="muted">AI 客觀分析 × 教師專業判斷</p><button class="btn primary" style="width:100%;margin:7px 0" onclick="googleLogin()">使用 Google 登入</button><button class="btn ghost" style="width:100%;margin:7px 0" onclick="guestLogin()">訪客試用</button></div></div>
 <div id="app" class="hidden"><header class="top"><span id="officialReleaseBadge" class="official-badge">正式版 v3.0</span><div class="brand">🎼 FairSing AI v3.0 正式版</div><div class="row"><span id="sync">尚未同步</span><span id="who"></span><button class="btn ghost" onclick="logout()">登出</button></div></header><div class="shell"><nav>
 <button class="nav active" data-p="home">🏠 Dashboard</button>
@@ -538,6 +556,7 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
 <button class="nav" data-p="assess">🎤 Assessment</button>
 <button class="nav" data-p="vocalrange">🎚️ 測試我的音域</button>
 <button class="nav" data-p="knowledge">🎼 音樂知識</button>
+<button class="nav" data-p="interactive" onclick="openInteractiveClassroom(event)">🧪 互動教室</button>
 <button class="nav" data-p="recorder">🪈 直笛教學</button>
 <button class="nav" data-p="curriculum">📚 Curriculum</button>
 <button class="nav" data-p="classroom">🎛 課程控制</button>
@@ -568,6 +587,40 @@ body.v39-piano #grandPianoV30,body.v39-grade #gradebookV33{display:block!importa
   <div class="card s12"><div class="row between"><h3>最近課堂紀錄</h3><button class="btn ghost" onclick="go('reports')">開啟 Reports</button></div><div id="recentClassSessions" class="recent-session-list"></div></div>
  </div>
 </section>
+
+<section id="interactive" class="page">
+  <div class="hero interactive-hero">
+    <h1>🧪 互動教室</h1>
+    <p>精選免費音樂互動資源，直接從 FairSing AI 開啟探索。</p>
+  </div>
+
+  <div class="interactive-grid">
+    <article class="interactive-card">
+      <div class="interactive-icon">🎛️</div>
+      <div class="interactive-content">
+        <div class="interactive-source">GOOGLE CREATIVE LAB</div>
+        <h2>Chrome Music Lab</h2>
+        <p>節奏、旋律、和弦、聲音與頻率等互動音樂實驗，適合學生直接用平板或手機操作。</p>
+        <div class="interactive-tags"><span>節奏</span><span>旋律</span><span>和弦</span><span>聲音探索</span></div>
+        <a class="btn primary interactive-link" href="https://musiclab.chromeexperiments.com/" target="_blank" rel="noopener noreferrer">開啟 Chrome Music Lab ↗</a>
+      </div>
+    </article>
+
+    <article class="interactive-card">
+      <div class="interactive-icon">🏛️</div>
+      <div class="interactive-content">
+        <div class="interactive-source">GOOGLE ARTS & CULTURE</div>
+        <h2>Learning About Music</h2>
+        <p>探索作曲家、樂器、音樂類型、管弦樂團、音樂傳統、聲音互動與虛擬參訪。</p>
+        <div class="interactive-tags"><span>作曲家</span><span>樂器</span><span>音樂史</span><span>虛擬參訪</span></div>
+        <a class="btn primary interactive-link" href="https://artsandculture.google.com/project/learning-music/" target="_blank" rel="noopener noreferrer">開啟 Google Arts & Culture ↗</a>
+      </div>
+    </article>
+  </div>
+
+  <div class="interactive-footnote">外部資源會在新分頁開啟，FairSing AI 會保留在原分頁。</div>
+</section>
+
 <section id="classes" class="page"><div class="row between"><h2>班級／社團／課後班學生</h2><div class="row"><button class="btn ghost" onclick="downloadTemplate()">Excel 範本</button><button class="btn primary" onclick="openImport()">Excel 匯入</button><button class="btn primary" onclick="openClass()">新增名單</button></div></div><div class="grid"><div class="card s4"><div id="classList"></div></div><div class="card s8"><div class="row between"><h3 id="studentTitle">學生</h3><button class="btn primary" onclick="openStudent()">新增學生</button></div><div id="studentList"></div></div></div></section>
 <section id="templates" class="page"><div class="row between"><h2>評量模板</h2><button class="btn primary" onclick="openTemplate()">新增模板</button></div><div id="templateList" class="grid"></div></section>
 
@@ -2396,4 +2449,17 @@ function fix(){try{if(typeof finger!=="undefined")finger.C5=[1,1,1,1,0,0,0,0]}ca
 function refresh(){fix();try{if(typeof currentManualNote!=="undefined"&&currentManualNote==="C5"&&window.renderV84)window.renderV84("C5")}catch(e){}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(refresh,350));else setTimeout(refresh,350);
 document.addEventListener("click",()=>setTimeout(fix,20),true);
-})();</script></body></html>
+})();</script>
+<script id="v87-interactive-navigation">
+function openInteractiveClassroom(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('interactive');
+  if(page)page.classList.add('active');
+  document.querySelectorAll('.shell nav .nav').forEach(b=>b.classList.remove('active'));
+  const btn=document.querySelector('.shell nav .nav[data-p="interactive"]');
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body></html>
