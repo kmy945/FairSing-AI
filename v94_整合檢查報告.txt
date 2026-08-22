@@ -1,0 +1,26 @@
+FairSing AI v94｜DRUMLAB srcdoc 隔離整合檢查
+
+PASS｜完整直笛 3.7 模板
+PASS｜直笛 3.7 啟動器
+PASS｜完整直笛頁面
+PASS｜互動教室
+PASS｜Assessment
+PASS｜班級學生
+PASS｜Reports 導覽
+PASS｜設定導覽
+PASS｜爵士鼓導覽
+PASS｜爵士鼓頁面
+PASS｜srcdoc iframe
+PASS｜不依賴 drumlab 子路徑
+PASS｜無 blob 跳轉
+
+FairSing inline JS：33 區塊／語法錯誤 0
+DRUMLAB inline JS：7 區塊／語法錯誤 0
+DRUMLAB 本地相依路徑：無
+
+本版策略：
+1. 以 v85 穩定整合版為唯一母版。
+2. 不修改直笛 3.7 template/launcher。
+3. DRUMLAB 完整 HTML 以 Base64 內嵌，透過 iframe.srcdoc 載入。
+4. iframe 只隔離 DRUMLAB CSS/JS，不使用外部子資料夾、不使用 blob 跳頁。
+5. 暫不加入班級/成績同步，先驗證爵士鼓各功能與原 FairSing 都能操作。
