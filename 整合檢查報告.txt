@@ -1,0 +1,23 @@
+FairSing AI 音樂殿堂版 × DRUMLAB 整合檢查
+
+PASS｜班級學生保留
+PASS｜Assessment保留
+PASS｜互動教室保留
+PASS｜直笛教學保留
+PASS｜Reports保留
+PASS｜資料恢復保留
+PASS｜爵士鼓入口加入
+PASS｜沒有把爵士鼓按鈕掛進 .nav
+PASS｜DRUMLAB單檔內嵌
+PASS｜班級橋接
+PASS｜成績佇列橋接
+
+FairSing inline JS：檢查 6 區塊，語法錯誤 0
+DRUMLAB inline JS：檢查 8 區塊，語法錯誤 0
+
+整合策略：
+1. 以你剛上傳且已確認可用的「音樂殿堂封面版」為唯一母版。
+2. DRUMLAB 以 Base64 單檔方式內嵌，避免 Android content:// / 子資料夾路徑問題。
+3. 爵士鼓按鈕不使用 FairSing .nav 類別，避免再次把主內容切成空白。
+4. 原 FairSing 班級學生、直笛、互動教室、Assessment、Reports、資料恢復程式不重寫。
+5. 爵士鼓測驗可選班級/學生並把成績放入 FairSingDrumGradeQueue；返回 FairSing 後再匯入現有成績紀錄（若 FairSing live state 可直接存取）。
