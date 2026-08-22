@@ -219,53 +219,14 @@
 }
 
 
-/* v96 爵士鼓原生頁：平板/手機都固定為上方橫向功能列 */
-body.drumlab-open .shell{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  grid-template-rows:auto auto !important;
-  min-height:0 !important;
-}
-body.drumlab-open .shell > nav{
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  align-self:start !important;
-  height:auto !important;
-  min-height:0 !important;
-  max-height:none !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  white-space:nowrap !important;
-  padding:10px 12px !important;
-  border-right:0 !important;
-}
-body.drumlab-open .shell > nav .nav{
-  flex:0 0 auto !important;
-  width:auto !important;
-  min-width:max-content !important;
-  min-height:44px !important;
-  height:auto !important;
-  align-self:center !important;
-}
-body.drumlab-open .shell > main{
-  padding:0 !important;
-  margin:0 !important;
-  min-height:0 !important;
-}
-body.drumlab-open #drumlab.page{
-  margin:0 !important;
-  padding:0 !important;
-  min-height:0 !important;
-  height:auto !important;
-}
-body.drumlab-open #drumlab .drumlab-page-shell{
-  margin:0 !important;
-  padding:10px 12px 16px !important;
-}
-body.drumlab-open #drumlabFrame{
-  margin:0 !important;
-  width:100% !important;
+
+/* v97 DRUMLAB 僅限內容區，不改 FairSing shell/nav */
+#drumlab.page{margin:0!important;padding:0!important;min-height:0!important}
+#drumlab .drumlab-page-shell{padding:12px 14px 18px;max-width:1500px;margin:0 auto}
+#drumlabFrame{display:block;width:100%;height:calc(100vh - 240px);min-height:680px;border:0;border-radius:18px;background:#0b1020}
+@media(max-width:760px){
+  #drumlab .drumlab-page-shell{padding:8px 10px 14px}
+  #drumlabFrame{height:calc(100vh - 215px);min-height:620px}
 }
 
 </style><link rel="manifest" href="manifest.webmanifest">
@@ -1852,7 +1813,7 @@ window.googleLogin=async()=>{
   }
 };window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
 function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
-document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){document.querySelectorAll('.page,.nav').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelector(`[data-p="${id}"]`).classList.add('active')}function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){const page=document.getElementById(id),btn=document.querySelector(`[data-p="${id}"]`);if(!page||!btn){console.warn('FairSing page not found:',id);return false}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));page.classList.add('active');btn.classList.add('active');if(id==='drumlab'){requestAnimationFrame(()=>page.scrollIntoView({block:'start',behavior:'auto'}))}return true}window.go=go;function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
 function render(){dedupeClassesV62();ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
 window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}))};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){const old=S.classes.find(c=>c.id===id)?.name||'';S.classes=S.classes.filter(c=>c.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:old}}))}};
 function renderClasses(){let c=S.classes.find(x=>x.id===selClass)||S.classes[0];if(c)selClass=c.id;classList.innerHTML=S.classes.map(x=>`<div class="row between" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn ${x.id===selClass?'primary':'ghost'}" onclick="pickClass('${x.id}')">${esc(x.name)}（${x.students.length}）</button><button class="btn danger" onclick="delClass('${x.id}')">刪除</button></div>`).join('')||'尚無班級';studentTitle.textContent=c?c.name:'學生';studentList.innerHTML=c?.students.length?`<table><tr><th>座號</th><th>姓名</th><th></th></tr>${c.students.map(s=>`<tr><td>${esc(s.no)}</td><td>${esc(s.name||'未填')}</td><td><button class="btn danger" onclick="delStudent('${s.id}')">刪除</button></td></tr>`).join('')}</table>`:'尚無學生'}
@@ -9786,139 +9747,16 @@ document.addEventListener("click",()=>setTimeout(fix,20),true);
 </script>
 
 
-<script id="drumlabNativeRouteGuardV96">
+
+
+
+<script id="drumlabUrlCleanupV97">
 (function(){
-  const isOldDrumRoute=()=>/^\/drumlab(?:\/|$)/i.test(location.pathname);
-
-  function normalizeOldRoute(){
-    if(!isOldDrumRoute()) return false;
-    try{
-      history.replaceState({fairsingPage:'drumlab'},'',location.origin + '/');
-    }catch(e){
-      try{history.replaceState({fairsingPage:'drumlab'},'','/');}catch(_){}
+  try{
+    if(/^\/drumlab(?:\/|$)/i.test(location.pathname)){
+      history.replaceState(null,'',location.origin + '/');
     }
-    sessionStorage.setItem('FairSing_Open_DrumLab','1');
-    return true;
-  }
-
-  function activatePage(pageId){
-    const page=document.getElementById(pageId);
-    if(!page) return false;
-
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    page.classList.add('active');
-
-    document.querySelectorAll('.nav[data-p]').forEach(b=>{
-      b.classList.toggle('active',b.dataset.p===pageId);
-    });
-
-    // Ensure the app itself is visible, but never show login just for page navigation.
-    const shell=document.querySelector('.shell');
-    if(shell) shell.classList.remove('hidden');
-
-    return true;
-  }
-
-  function openDrum(){
-    if(!activatePage('drumlab')) return;
-    sessionStorage.removeItem('FairSing_Open_DrumLab');
-    fixDrumLayout();
-    setTimeout(()=>document.getElementById('drumlab')?.scrollIntoView({block:'start',behavior:'auto'}),0);
-  }
-
-  function fixDrumLayout(){
-    const page=document.getElementById('drumlab');
-    const shell=document.querySelector('.shell');
-    const nav=shell?.querySelector(':scope > nav');
-    const main=shell?.querySelector(':scope > main');
-    if(!page||!shell||!nav||!main) return;
-
-    const on=page.classList.contains('active');
-    document.body.classList.toggle('drumlab-open',on);
-
-    if(on){
-      shell.style.gridTemplateColumns='1fr';
-      shell.style.gridTemplateRows='auto auto';
-      shell.style.minHeight='0';
-
-      nav.style.display='flex';
-      nav.style.flexDirection='row';
-      nav.style.alignItems='center';
-      nav.style.alignSelf='start';
-      nav.style.height='auto';
-      nav.style.minHeight='0';
-      nav.style.maxHeight='none';
-      nav.style.overflowX='auto';
-      nav.style.overflowY='hidden';
-      nav.style.whiteSpace='nowrap';
-
-      main.style.padding='0';
-      main.style.margin='0';
-      main.style.minHeight='0';
-
-      page.style.margin='0';
-      page.style.padding='0';
-      page.style.minHeight='0';
-      page.style.height='auto';
-    }else{
-      shell.style.gridTemplateColumns='';
-      shell.style.gridTemplateRows='';
-      shell.style.minHeight='';
-
-      nav.style.display='';
-      nav.style.flexDirection='';
-      nav.style.alignItems='';
-      nav.style.alignSelf='';
-      nav.style.height='';
-      nav.style.minHeight='';
-      nav.style.maxHeight='';
-      nav.style.overflowX='';
-      nav.style.overflowY='';
-      nav.style.whiteSpace='';
-
-      main.style.padding='';
-      main.style.margin='';
-      main.style.minHeight='';
-    }
-  }
-
-  normalizeOldRoute();
-
-  // Capture before any old navigation code can run.
-  document.addEventListener('click',function(e){
-    const btn=e.target.closest?.('[data-p="drumlab"],a[href*="/drumlab"],a[href^="drumlab"]');
-    if(!btn) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    try{history.replaceState({fairsingPage:'drumlab'},'',location.origin + '/');}catch(_){}
-    openDrum();
-  },true);
-
-  // Keep normal FairSing nav layout switching correct.
-  document.addEventListener('click',function(e){
-    const btn=e.target.closest?.('.nav[data-p]');
-    if(!btn) return;
-    setTimeout(fixDrumLayout,0);
-  },false);
-
-  window.addEventListener('popstate',function(){
-    if(isOldDrumRoute()){
-      normalizeOldRoute();
-      openDrum();
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded',function(){
-    if(sessionStorage.getItem('FairSing_Open_DrumLab')==='1'){
-      // Wait until the normal FairSing auth/render pass has finished.
-      setTimeout(openDrum,250);
-      setTimeout(openDrum,900);
-    }
-    fixDrumLayout();
-  });
-
-  // Expose only for internal debugging/reload button.
-  window.FairSingOpenDrumLab=openDrum;
+  }catch(e){}
 })();
 </script>
 
