@@ -1,0 +1,10 @@
+FairSing AI × DRUMLAB 整合測試版
+
+- 母版：FairSing-AI_全部恢復與資料防覆蓋版
+- 爵士鼓：DRUMLAB v24 大題庫版
+- FairSing 主選單新增「爵士鼓教學」
+- 爵士鼓測驗直接讀取 FairSing S.classes 班級與學生名單
+- 測驗完成後可按「匯入 FairSing 成績管理」
+- 成績直接寫入 FairSing S.records，Reports 可顯示
+- 保存爵士鼓譜面/樂器分數、節奏分數、總分、Level、BPM、小節數
+- 不修改既有班級、學生、雲端同步或資料恢復機制
