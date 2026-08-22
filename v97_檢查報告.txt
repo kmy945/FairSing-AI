@@ -1,0 +1,11 @@
+FairSing AI v97｜DRUMLAB 長江空白真正修正版
+
+PASS｜真正單欄修正
+PASS｜JS fallback
+PASS｜直笛3.7保留
+PASS｜Assessment保留
+PASS｜班級同步保留
+PASS｜DRUMLAB保留
+
+根因：平板寬度下 .shell 仍維持側欄 grid，nav 被 DRUMLAB iframe 高度拉成整條直柱。
+修正：爵士鼓頁 active 時只對該頁強制 shell 單欄＋橫向 nav；離開爵士鼓後恢復原 FairSing 版面。

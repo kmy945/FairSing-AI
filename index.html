@@ -220,6 +220,55 @@
   margin-top:0 !important;
 }
 
+
+/* v97 真正修正：爵士鼓頁啟用時，FairSing shell 改為單欄，避免 nav 被 main 高度拉成長柱 */
+body:has(#drumlab.page.active) .shell{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  grid-template-rows:auto auto !important;
+  min-height:0 !important;
+}
+body:has(#drumlab.page.active) .shell > nav{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  align-self:start !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  padding:10px 12px !important;
+  border-right:0 !important;
+  border-bottom:1px solid var(--line) !important;
+  white-space:nowrap !important;
+}
+body:has(#drumlab.page.active) .shell > nav .nav{
+  width:auto !important;
+  min-width:max-content !important;
+  height:auto !important;
+  min-height:44px !important;
+  align-self:center !important;
+  flex:0 0 auto !important;
+}
+body:has(#drumlab.page.active) .shell > main{
+  padding:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+}
+body:has(#drumlab.page.active) #drumlab.page{
+  margin:0 !important;
+  padding:0 !important;
+  min-height:0 !important;
+}
+body:has(#drumlab.page.active) #drumlab .drumlab-page-shell{
+  margin:0 !important;
+  padding:10px 14px 16px !important;
+}
+body:has(#drumlab.page.active) #drumlab .drumlab-page-head{
+  margin:0 0 10px !important;
+}
+
 </style><link rel="manifest" href="manifest.webmanifest">
 
 <style id="fairdraw-clean-v7-style">
@@ -9786,6 +9835,56 @@ document.addEventListener("click",()=>setTimeout(fix,20),true);
     loadDrumLab();
     document.getElementById("drumReloadBtn")?.addEventListener("click",loadDrumLab);
   });
+})();
+</script>
+
+
+<script id="drumlabLayoutFixV97">
+(function(){
+  function applyDrumLayout(){
+    const page=document.getElementById('drumlab');
+    const shell=document.querySelector('.shell');
+    const nav=shell?.querySelector(':scope > nav');
+    const main=shell?.querySelector(':scope > main');
+    if(!page||!shell||!nav||!main)return;
+    const on=page.classList.contains('active');
+    if(on){
+      shell.style.gridTemplateColumns='1fr';
+      shell.style.gridTemplateRows='auto auto';
+      shell.style.minHeight='0';
+      nav.style.display='flex';
+      nav.style.flexDirection='row';
+      nav.style.alignItems='center';
+      nav.style.height='auto';
+      nav.style.minHeight='0';
+      nav.style.overflowX='auto';
+      nav.style.overflowY='hidden';
+      main.style.padding='0';
+      main.style.margin='0';
+      page.style.margin='0';
+      page.style.padding='0';
+      page.style.minHeight='0';
+      requestAnimationFrame(()=>page.scrollIntoView({block:'start',behavior:'auto'}));
+    }else{
+      shell.style.gridTemplateColumns='';
+      shell.style.gridTemplateRows='';
+      shell.style.minHeight='';
+      nav.style.display='';
+      nav.style.flexDirection='';
+      nav.style.alignItems='';
+      nav.style.height='';
+      nav.style.minHeight='';
+      nav.style.overflowX='';
+      nav.style.overflowY='';
+      main.style.padding='';
+      main.style.margin='';
+    }
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest?.('[data-p]');
+    if(b)setTimeout(applyDrumLayout,0);
+  },true);
+  document.addEventListener('DOMContentLoaded',applyDrumLayout);
 })();
 </script>
 
