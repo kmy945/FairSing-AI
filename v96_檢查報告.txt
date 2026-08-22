@@ -1,0 +1,17 @@
+FairSing AI v96｜DRUMLAB 班級同步＋Excel＋成績管理檢查
+
+PASS｜FairSing橋接
+PASS｜同步班級學生
+PASS｜Excel匯入
+PASS｜Excel匯出
+PASS｜直接寫入FairSing成績
+PASS｜直笛3.7保留
+PASS｜Assessment保留
+PASS｜DRUMLAB保留
+
+FairSing inline JS：33 區塊／語法錯誤 0
+DRUMLAB inline JS：8 區塊／語法錯誤 0
+
+Excel 匯入欄位：班級、座號、姓名。
+爵士鼓測驗儲存後直接加入 FairSing S.records，並保留 source=DRUMLAB 與分項成績。
+本版仍使用 srcdoc 隔離 DRUMLAB，因此爵士鼓 CSS/JS 不會污染 FairSing 主頁。
