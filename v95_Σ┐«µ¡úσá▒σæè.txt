@@ -1,0 +1,15 @@
+FairSing AI v95｜爵士鼓跳回封面修正
+
+PASS｜爵士鼓改為內部頁
+PASS｜不再跳 drumlab/index.html
+PASS｜沒有 launchDrumLabStable 舊跳轉
+PASS｜爵士鼓內容已內嵌
+PASS｜音樂殿堂主題保留
+PASS｜直笛保留
+PASS｜Assessment 保留
+PASS｜班級學生保留
+
+FairSing inline JS：33 區塊／語法錯誤 0
+
+根因：單檔版仍保留 location.href='drumlab/index.html'，Firebase 找不到該路徑後回到首頁。
+修正：改為 FairSing 原生 drumlab page + iframe.srcdoc 內嵌 DRUMLAB，不再換網址。

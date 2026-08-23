@@ -1,0 +1,21 @@
+FairSing AI v96｜爵士鼓原生內頁與舊路由修正版
+
+PASS｜爵士鼓入口為原生 data-p
+PASS｜沒有 /drumlab 跳轉指令
+PASS｜舊路由防護
+PASS｜平板巨大空白修正
+PASS｜DRUMLAB 內嵌頁存在
+PASS｜DRUMLAB srcdoc loader 存在
+PASS｜音樂殿堂主題保留
+PASS｜直笛頁保留
+PASS｜Assessment 保留
+PASS｜班級學生保留
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+修正內容：
+1. 所有爵士鼓入口只切換 FairSing 內部 drumlab page，不換網址。
+2. 舊書籤或舊 Firebase 路由 /drumlab/* 進入時，使用 history.replaceState 回到根網址，不重新載入。
+3. 若從舊 /drumlab/* 進入，登入/渲染完成後自動開啟爵士鼓頁。
+4. 爵士鼓頁啟用時，平板強制單欄 shell + 橫向 nav，消除超高空白欄。
+5. 不修改直笛、Assessment、班級學生及音樂殿堂主題。

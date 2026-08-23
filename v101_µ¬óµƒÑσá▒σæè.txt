@@ -1,0 +1,14 @@
+FairSing AI v101｜封面標誌真正替換版
+
+PASS｜封面額外疊圖 DOM 已移除
+PASS｜正式 M 標誌已直接合成進封面背景
+PASS｜登入後 Header 正式 Logo 保留
+PASS｜爵士鼓頁面保留
+PASS｜爵士鼓 loader 保留
+PASS｜直笛頁面保留
+PASS｜Assessment 保留
+PASS｜Dashboard 保留
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+本次只修正封面標誌的重疊問題；沒有修改學生資料、同步、直笛、Assessment、爵士鼓功能邏輯。
