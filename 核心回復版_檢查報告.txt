@@ -1,0 +1,24 @@
+FairSing AI｜核心回復版（v103 穩定核心＋Google popup）
+
+PASS｜基底為 v103 功能結構
+PASS｜直笛保留
+PASS｜爵士鼓保留
+PASS｜Assessment 保留
+PASS｜音樂殿堂主題保留
+PASS｜只有原主程式 Google login
+PASS｜popup 登入存在
+PASS｜redirect API 完全移除
+PASS｜原 onAuthStateChanged 保留
+PASS｜原 show() 保留
+PASS｜原 watch() 保留
+PASS｜沒有第二套 Auth
+PASS｜沒有第二套可見登入按鈕
+
+Inline JavaScript：35 區塊／語法錯誤 0
+
+這不是在 v112 上再補。
+基底直接回到 v103：原 Firebase app/auth、原 onAuthStateChanged、原 show/render/watch 流程全部保留。
+唯一登入功能修改：移除手機 signInWithRedirect，統一由原主程式 signInWithPopup。
+封面不新增任何第二套可見 Google/訪客按鈕；只加透明熱區 touch/pointer 安全。
+未修改 Firestore schema、班級學生、成績、直笛、爵士鼓或 Assessment 資料結構。
+可在本地確認 DOM/程式結構與 JS 語法；Google OAuth 本身需部署到 fairsing-ai.web.app 後實測。
