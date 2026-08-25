@@ -1,0 +1,24 @@
+FairSing AI v99｜爵士鼓空白頁 DOM 結構修正版
+
+PASS｜爵士鼓已移出Assessment
+PASS｜爵士鼓為FairSing主頁直接子層
+PASS｜爵士鼓導覽存在
+PASS｜原生go切頁保留
+PASS｜DRUMLAB載入器保留
+PASS｜DRUMLAB iframe保留
+PASS｜Dashboard保留
+PASS｜Assessment保留
+PASS｜直笛保留
+PASS｜Curriculum保留
+PASS｜音樂殿堂主題保留
+PASS｜平板導覽修正保留
+
+FairSing 主頁直接 page 順序：
+home → interactive → classes → templates → assess → vocalrange → reports → knowledge → schedule → fairdraw → recorder → drumlab → curriculum → classroom → settings
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+真正根因：#drumlab 被錯誤放在 #assess 內部的 <main class='card ae-main'>。
+當 go('drumlab') 隱藏 #assess 後，即使 #drumlab.active，仍被隱藏的父層一起藏住。
+本版已將 #drumlab 移到 FairSing 外層 main，與 recorder / curriculum 等 page 同級。
+未改 DRUMLAB 本體、登入、同步、班級資料或其他功能邏輯。
