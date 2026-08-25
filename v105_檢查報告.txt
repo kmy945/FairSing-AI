@@ -1,0 +1,19 @@
+FairSing AI v105｜Google 登入按不到修正版
+
+PASS｜Google 按鈕為真實可見按鈕
+PASS｜Google 按鈕不再是空白透明熱區
+PASS｜按鈕強制 pointer-events:auto
+PASS｜手機觸控 touch-action
+PASS｜登入載入保護
+PASS｜popup Google 登入保留
+PASS｜redirect 登入沒有回來
+PASS｜訪客按鈕可點
+PASS｜Dashboard 保留
+PASS｜爵士鼓保留
+PASS｜直笛保留
+
+Inline JavaScript：37 區塊／語法錯誤 0
+
+根因：登入頁原本只有背景圖看得到按鈕，實際 HTML 是兩個沒有文字的透明熱區；不同手機/平板比例會造成點擊區與畫面按鈕錯位。
+修正：改為真正可見且可觸控的 HTML Google／訪客按鈕，並在 Firebase 模組尚未載完時顯示等待狀態。
+未修改 Firestore 資料、班級學生、直笛、爵士鼓或 Assessment。
