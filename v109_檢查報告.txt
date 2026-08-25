@@ -1,0 +1,24 @@
+FairSing AI v109｜登入後空白頁根因修正版
+
+PASS｜修正 addEventListener/off 錯誤
+PASS｜登入成功立即顯示 App
+PASS｜既有登入狀態自動顯示 App
+PASS｜Dashboard 強制保險
+PASS｜Firestore 載入保留
+PASS｜render 錯誤隔離
+PASS｜同步監聽錯誤隔離
+PASS｜home 存在
+PASS｜drumlab 存在
+PASS｜recorder 存在
+
+Inline JavaScript：38 區塊／語法錯誤 0
+
+本版找到 v108 的實際程式錯誤：
+window.addEventListener() 的回傳值被當成 off() 函式呼叫；瀏覽器執行到該處會產生 TypeError。
+
+v109 修正策略：
+1. 正確使用 removeEventListener，移除 v108 的 off() 執行錯誤。
+2. Google 登入成功或重新開頁偵測到既有登入狀態時，先顯示 FairSing App/Dashboard，不等待 Firestore。
+3. Firestore、render、watch 分開處理；其中一段失敗，不再讓整個主畫面消失。
+4. 加入 Dashboard 顯示保險 CSS，避免舊版 page/display 規則把首頁蓋掉。
+5. 未改班級、學生、成績、直笛、爵士鼓、Assessment 的資料結構。

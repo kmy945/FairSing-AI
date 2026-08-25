@@ -249,6 +249,13 @@ body{background:var(--hall-bg)}
   pointer-events:none!important;
 }
 </style>
+
+<style id="fairsing-v109-shell-guard">
+html.fairsing-app-visible #app:not(.hidden){display:block!important}
+html.fairsing-app-visible #app #home.active{display:block!important;visibility:visible!important;opacity:1!important}
+html.fairsing-app-visible #app .shell{display:grid}
+@media(max-width:850px){html.fairsing-app-visible #app .shell{display:block}}
+</style>
 </head><body>
 <div id="login" class="login hall-login" aria-label="FairSing AI">
   <div class="hall-login-actions" aria-hidden="false">
@@ -284,6 +291,27 @@ try{
   await setPersistence(auth,browserLocalPersistence);
 
   const provider=new GoogleAuthProvider();
+
+function revealFairSingShell(){
+  const login=document.getElementById('login');
+  const app=document.getElementById('app');
+  const home=document.getElementById('home');
+  if(login)login.classList.add('hidden');
+  if(app)app.classList.remove('hidden');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(home){
+    home.classList.add('active');
+    home.style.setProperty('display','block','important');
+  }
+  const homeNav=document.querySelector('[data-p="home"]');
+  if(homeNav)homeNav.classList.add('active');
+  document.documentElement.classList.add('fairsing-app-visible');
+}
+window.addEventListener('fairsing-force-shell',revealFairSingShell);
+onAuthStateChanged(auth,u=>{
+  if(u) revealFairSingShell();
+});
+
   provider.setCustomParameters({prompt:'select_account'});
 
   let busy=false;
@@ -295,6 +323,7 @@ try{
     try{
       const cred=await signInWithPopup(auth,provider);
       say('登入成功，正在載入資料…');
+      revealFairSingShell();
       try{window.dispatchEvent(new CustomEvent('fairsing-auth-success',{detail:{uid:cred?.user?.uid||''}}));}catch(_){}
     }catch(e){
       const code=e?.code||'';
@@ -1238,9 +1267,11 @@ window.FairSingCloudV45={
  waitForUser:()=>new Promise(resolve=>{
    if(auth.currentUser)return resolve(auth.currentUser);
    let done=false;
-   const off=window.addEventListener('fairsing-auth-success',()=>{const u=auth.currentUser;if(u)bootTeacher(u)});
-onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)});
-   setTimeout(()=>{if(!done){done=true;off();resolve(auth.currentUser||null)}},1800);
+   const onFairSingAuth=()=>{const u=auth.currentUser;if(u)finish(u)};
+   const finish=(u)=>{if(done)return;done=true;window.removeEventListener('fairsing-auth-success',onFairSingAuth);resolve(u||null)};
+   window.addEventListener('fairsing-auth-success',onFairSingAuth);
+   const unsubAuth=onAuthStateChanged(auth,u=>{if(u){try{unsubAuth()}catch(_){};finish(u)}});
+   setTimeout(()=>{try{unsubAuth()}catch(_){};finish(auth.currentUser||null)},1800);
  }),
  saveGradebook:async(data)=>{
    const u=auth.currentUser;if(!u)throw new Error('NOT_SIGNED_IN');
@@ -1537,8 +1568,11 @@ async function bootTeacher(u){
     mode='teacher';U=u;
     login.classList.add('hidden');
     app.classList.remove('hidden');
-    who.textContent=U.displayName||U.email||'Google 使用者';
-    sync.textContent='☁ 載入資料中…';
+    try{window.dispatchEvent(new Event('fairsing-force-shell'))}catch(_){}
+    const home=document.getElementById('home');
+    if(home){home.classList.add('active');home.style.setProperty('display','block','important')}
+    if(who)who.textContent=U.displayName||U.email||'Google 使用者';
+    if(sync)sync.textContent='☁ 載入資料中…';
     try{
       const x=await getDoc(ref());
       S=x.exists()?norm(x.data().payload):structuredClone(D);
@@ -1549,10 +1583,16 @@ async function bootTeacher(u){
         S=offline?norm(JSON.parse(offline)):structuredClone(D);
       }catch(_){S=structuredClone(D)}
     }
-    render();
+    try{
+      render();
+    }catch(renderError){
+      console.error('FairSing render failed',renderError);
+      const home=document.getElementById('home');
+      if(home){home.classList.add('active');home.style.setProperty('display','block','important')}
+    }
     if(!document.querySelector('.page.active'))go('home');
-    watch();
-    sync.textContent='☁ 已同步';
+    try{watch()}catch(watchError){console.error('FairSing watch failed',watchError)}
+    if(sync)sync.textContent='☁ 已同步';
   }catch(e){
     console.error('bootTeacher failed',e);
     login.classList.remove('hidden');
