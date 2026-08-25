@@ -1,0 +1,19 @@
+FairSing AI v104｜Google 登入 missing initial state 修正版
+
+PASS｜已完全移除 redirect 登入 API
+PASS｜Google 登入改為 popup
+PASS｜Google 帳號選擇提示
+PASS｜Firebase authDomain 保留
+PASS｜訪客登入保留
+PASS｜登入狀態監聽保留
+PASS｜Dashboard 保留
+PASS｜直笛保留
+PASS｜爵士鼓保留
+PASS｜Assessment 保留
+
+Inline JavaScript：36 區塊／語法錯誤 0
+
+修正根因：舊版在 Android／iPad／手機偵測到 mobile 時強制 redirect 登入。
+部分瀏覽器的儲存分割會使 Firebase redirect state 無法取回，便出現 missing initial state。
+本版完全移除 redirect 登入 API，Google 登入統一由使用者點擊後執行 popup。
+未修改 Firestore 資料結構、班級學生、成績、直笛、爵士鼓與內頁主題。
