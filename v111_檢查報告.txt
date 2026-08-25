@@ -1,0 +1,20 @@
+FairSing AI v111｜Google Auth import 根因修正版
+
+PASS｜獨立 Auth 有 onAuthStateChanged import
+PASS｜獨立 Auth 無 setPersistence
+PASS｜獨立 Auth 無 browserLocalPersistence
+PASS｜獨立 Auth 使用 onAuthStateChanged
+PASS｜Google popup 保留
+PASS｜真實初始化錯誤顯示
+PASS｜Dashboard 保留
+PASS｜班級學生保留
+PASS｜Assessment 保留
+PASS｜直笛保留
+PASS｜爵士鼓保留
+
+Inline JavaScript：37 區塊／語法錯誤 0
+
+找到的實際錯誤：獨立 Auth 模組呼叫 onAuthStateChanged，但 firebase-auth import 沒有載入它。
+同一 import 還殘留 setPersistence/browserLocalPersistence。
+v111 已將 Auth import 明確固定為 getAuth / GoogleAuthProvider / signInWithPopup / onAuthStateChanged。
+未修改 Firestore schema、班級、學生、成績、直笛、爵士鼓與 Assessment。

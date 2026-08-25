@@ -267,8 +267,10 @@ html.fairsing-app-visible #app .shell{display:grid}
 <script type="module" id="fairsing-auth-v107">
 import {initializeApp,getApps,getApp} from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
 import {
-  getAuth,GoogleAuthProvider,signInWithPopup,
-  setPersistence,browserLocalPersistence
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
 
 const cfg={
@@ -288,9 +290,7 @@ try{
   const app=getApps().length?getApp():initializeApp(cfg);
   const auth=getAuth(app);
   auth.languageCode='zh-TW';
-  await setPersistence(auth,browserLocalPersistence);
-
-  const provider=new GoogleAuthProvider();
+const provider=new GoogleAuthProvider();
 
 function revealFairSingShell(){
   const login=document.getElementById('login');
@@ -312,7 +312,7 @@ onAuthStateChanged(auth,u=>{
   if(u) revealFairSingShell();
 });
 
-  provider.setCustomParameters({prompt:'select_account'});
+  try{provider.setCustomParameters({prompt:'select_account'});}catch(e){console.warn('provider params skipped',e);}
 
   let busy=false;
   async function login(){
@@ -355,7 +355,7 @@ onAuthStateChanged(auth,u=>{
   say('');
 }catch(e){
   console.error('FairSing Auth init failed',e);
-  say('Google 登入服務載入失敗，請重新整理');
+  say('Google 登入初始化失敗：'+(e?.code||e?.message||String(e)));
   if(btn)btn.disabled=true;
 }
 </script>
@@ -9568,6 +9568,7 @@ window.addEventListener('pageshow',()=>{
 });
 </script>
 
+<!-- v111-auth-import-fix -->
 </body></html>
 
 <!-- v101: login cover logo baked into background; no overlapping logo DOM -->
