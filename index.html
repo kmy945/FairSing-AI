@@ -293,8 +293,9 @@ try{
     if(btn)btn.disabled=true;
     say('正在開啟 Google 登入…');
     try{
-      await signInWithPopup(auth,provider);
+      const cred=await signInWithPopup(auth,provider);
       say('登入成功，正在載入資料…');
+      try{window.dispatchEvent(new CustomEvent('fairsing-auth-success',{detail:{uid:cred?.user?.uid||''}}));}catch(_){}
     }catch(e){
       const code=e?.code||'';
       console.error('FairSing Google login failed',code,e);
@@ -1237,7 +1238,8 @@ window.FairSingCloudV45={
  waitForUser:()=>new Promise(resolve=>{
    if(auth.currentUser)return resolve(auth.currentUser);
    let done=false;
-   const off=onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)});
+   const off=window.addEventListener('fairsing-auth-success',()=>{const u=auth.currentUser;if(u)bootTeacher(u)});
+onAuthStateChanged(auth,u=>{if(done)return;done=true;off();resolve(u||null)});
    setTimeout(()=>{if(!done){done=true;off();resolve(auth.currentUser||null)}},1800);
  }),
  saveGradebook:async(data)=>{
@@ -1526,8 +1528,47 @@ function ensurePhase2(){
 const norm=x=>({...structuredClone(D),...x,settings:{...D.settings,...(x?.settings||{})}}),esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 window.googleLogin=()=>window.FairSingAuthV107?.login?.();
 window.guestLogin=()=>{mode='guest';U={uid:'guest',displayName:'訪客試用'};S=norm(JSON.parse(localStorage.getItem('fs-v3-guest')||'null'));show()};
-window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};onAuthStateChanged(auth,async u=>{if(u){mode='teacher';U=u;let x=await getDoc(ref());S=x.exists()?norm(x.data().payload):structuredClone(D);show();watch()}});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
-function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':U.displayName||U.email;render()}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
+window.logout=async()=>{if(mode==='teacher')await signOut(auth);location.reload()};let teacherBootBusy=false,teacherBootUid=null;
+async function bootTeacher(u){
+  if(!u)return;
+  if(teacherBootBusy&&teacherBootUid===u.uid)return;
+  teacherBootBusy=true;teacherBootUid=u.uid;
+  try{
+    mode='teacher';U=u;
+    login.classList.add('hidden');
+    app.classList.remove('hidden');
+    who.textContent=U.displayName||U.email||'Google 使用者';
+    sync.textContent='☁ 載入資料中…';
+    try{
+      const x=await getDoc(ref());
+      S=x.exists()?norm(x.data().payload):structuredClone(D);
+    }catch(e){
+      console.error('state load failed',e);
+      try{
+        const offline=localStorage.getItem('fs-v3-offline');
+        S=offline?norm(JSON.parse(offline)):structuredClone(D);
+      }catch(_){S=structuredClone(D)}
+    }
+    render();
+    if(!document.querySelector('.page.active'))go('home');
+    watch();
+    sync.textContent='☁ 已同步';
+  }catch(e){
+    console.error('bootTeacher failed',e);
+    login.classList.remove('hidden');
+    app.classList.add('hidden');
+    alert('登入成功，但 FairSing 主介面載入失敗：'+(e?.message||e));
+  }finally{teacherBootBusy=false;}
+}
+onAuthStateChanged(auth,u=>{
+  if(u)bootTeacher(u);
+  else if(mode!=='guest'){
+    teacherBootUid=null;teacherBootBusy=false;
+    login.classList.remove('hidden');
+    app.classList.add('hidden');
+  }
+});const ref=()=>doc(db,'teachers',U.uid,'app','state');function watch(){unsub?.();unsub=onSnapshot(ref(),x=>{if(x.exists()){S=norm(x.data().payload);render();sync.textContent='☁ 已同步'}})}
+function show(){login.classList.add('hidden');app.classList.remove('hidden');who.textContent=mode==='guest'?'訪客試用':(U?.displayName||U?.email||'Google 使用者');render();if(!document.querySelector('.page.active'))go('home')}function save(){sync.textContent=mode==='guest'?'💾 儲存中':'🔄 同步中';clearTimeout(timer);timer=setTimeout(async()=>{if(mode==='guest'){localStorage.setItem('fs-v3-guest',JSON.stringify(S));sync.textContent='💾 本機已儲存'}else{try{await setDoc(ref(),{payload:S,updatedAt:serverTimestamp()},{merge:true});sync.textContent='☁ 已同步'}catch{localStorage.setItem('fs-v3-offline',JSON.stringify(S));sync.textContent='⚠ 離線暫存'}}render()},400)}window.syncNow=save;
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>go(b.dataset.p));function go(id){const page=document.getElementById(id),btn=document.querySelector(`[data-p="${id}"]`);if(!page||!btn){console.warn('FairSing page not found:',id);return false}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));page.classList.add('active');btn.classList.add('active');if(id==='drumlab'){requestAnimationFrame(()=>page.scrollIntoView({block:'start',behavior:'auto'}))}return true}window.go=go;function modalOpen(t,b){mt.textContent=t;mb.innerHTML=b;modal.classList.add('open')}window.closeModal=()=>modal.classList.remove('open');
 function render(){dedupeClassesV62();ensurePhase2();nClass.textContent=S.classes.length;nStudent.textContent=S.classes.reduce((n,c)=>n+c.students.length,0);nRecord.textContent=S.records.length;let cDone=(S.curriculum||[]).filter(x=>x.status==='done').length;dashboardProgress.textContent=(S.curriculum||[]).length?Math.round(cDone/S.curriculum.length*100)+'%':'0%';resume.innerHTML=S.session?`${esc(S.session.className)}｜完成 ${S.session.completed.length} 位 <button class="btn primary" onclick="document.querySelector('[data-p=assess]').click()">繼續</button>`:'尚無未完成課堂';renderDashboardToday();renderRecentClassSessions();if(!S.release?.firstRunCompleted&&!sessionStorage.getItem('fs_first_run_seen')){sessionStorage.setItem('fs_first_run_seen','1');setTimeout(openFirstRunWizard,400)};if(window.dashTeacherGreeting)dashTeacherGreeting.textContent=`${S.appPreferences?.teacherName||'老師'}，準備開始今天的音樂課`;renderClasses();renderTemplates();selectors();renderOrder();renderSeats();renderRecords();renderQuestionBank();renderScoreImports();renderMaterials();renderSchedule();renderQuickDrawSource?.();renderCurriculum();renderClassroomSelectors();renderJourney();renderAssessmentEngine();renderClassroomMode();renderMusicTraining();renderAudioCalibrationSummary();syncManualDuration();applyAssessmentPreset();sw.value=S.settings.sw;tw.value=S.settings.tw;if(window.teacherNameSetting){teacherNameSetting.value=S.appPreferences?.teacherName||'Meng';schoolNameSetting.value=S.appPreferences?.schoolName||'';uiModeSetting.value=S.appPreferences?.uiMode||'full'}}
 window.openClass=()=>modalOpen('新增名單','<label>名單名稱</label><input id="cn"><button class="btn primary" style="margin-top:12px" onclick="addClass()">建立</button>');window.addClass=()=>{let n=cn.value.trim();if(!n)return;let c={id:crypto.randomUUID(),name:n,students:[]};S.classes.push(c);selClass=c.id;closeModal();save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:n}}))};window.pickClass=id=>{selClass=id;render()};window.delClass=id=>{if(confirm('刪除班級？')){const old=S.classes.find(c=>c.id===id)?.name||'';S.classes=S.classes.filter(c=>c.id!==id);save();window.dispatchEvent(new CustomEvent('fairsing-roster-changed',{detail:{className:old}}))}};

@@ -1,0 +1,19 @@
+FairSing AI v108｜登入後主介面初始化修正版
+
+PASS｜bootTeacher
+PASS｜auth-success bridge
+PASS｜Firestore load
+PASS｜render
+PASS｜watch
+PASS｜home
+PASS｜classes
+PASS｜assess
+PASS｜recorder
+PASS｜drumlab
+
+Inline JavaScript：37 區塊／語法錯誤 0
+
+已修正 Google 登入成功後沒有接回 FairSing 主程式初始化的問題。
+Google 登入後會依序：顯示 app → 讀取 Firestore → render Dashboard → 啟動 watch 同步。
+若 Firestore 暫時讀不到，改用既有離線暫存或預設資料，不再整頁空白。
+未修改班級、學生、成績、直笛、爵士鼓或 Assessment 的資料結構與功能邏輯。
