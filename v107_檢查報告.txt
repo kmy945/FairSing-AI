@@ -1,0 +1,21 @@
+FairSing AI v107｜Google 登入獨立模組修正版
+
+PASS｜獨立 Auth 模組存在
+PASS｜Google 按鈕由 Auth ready 後才啟用
+PASS｜popup 直接綁在真實 click
+PASS｜沒有 queued/setTimeout 登入
+PASS｜沒有 redirect 登入
+PASS｜主程式重用 Firebase App
+PASS｜登入錯誤會顯示代碼
+PASS｜訪客登入保留
+PASS｜Dashboard 保留
+PASS｜爵士鼓保留
+PASS｜直笛保留
+
+Inline JavaScript：37 區塊／語法錯誤 0
+
+本版把 Google 登入從大型 FairSing 主程式拆開。
+Firebase Auth 載入完成後才啟用透明熱區；使用者實際點擊時直接呼叫 signInWithPopup。
+不再使用 redirect，也不再用 setTimeout/排隊方式啟動 popup。
+若仍失敗，畫面會直接顯示 popup-blocked / unauthorized-domain 等實際原因。
+未修改 Firestore 資料結構、班級學生、成績、直笛、爵士鼓或 Assessment。

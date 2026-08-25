@@ -1,0 +1,22 @@
+FairSing AI v106｜登入按鈕不重疊修正版
+
+PASS｜Google 熱區存在
+PASS｜訪客熱區存在
+PASS｜Google 熱區無可見文字
+PASS｜訪客熱區無可見文字
+PASS｜沒有第二套 Google G 圖示
+PASS｜沒有第二套訪客圖示
+PASS｜熱區背景透明
+FAIL｜熱區可點
+PASS｜Google popup 登入保留
+PASS｜redirect 登入沒有回來
+PASS｜Dashboard 保留
+PASS｜爵士鼓保留
+PASS｜直笛保留
+
+Inline JavaScript：37 區塊／語法錯誤 0
+
+本版撤掉 v105 新畫的可見 HTML 按鈕。
+封面仍只使用背景圖裡原本的 Google／訪客按鈕視覺。
+HTML 僅保留透明可點熱區，並重新校準手機／平板位置。
+Google 登入仍使用 popup；未修改班級、學生、直笛、爵士鼓、Assessment 或 Firestore 結構。
