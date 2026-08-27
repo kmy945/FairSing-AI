@@ -1,0 +1,6 @@
+FairSing AI v104｜爵士鼓曲譜測驗修正
+
+1. 修正「測驗中開啟節拍器」文字被壓成直排：改為橫向 inline-flex，手機/平板窄畫面可整列換行。
+2. 曲譜測驗 BPM 改為可直接輸入 40–240（每次 5 BPM），調整後立即同步到題目、播放示範、預備拍、測驗節拍器與評分時間軸。
+3. 提升爵士鼓各樂器音量：Bass Drum、Snare、Hi-Hat、Crash、Ride、Tom 1/2、Floor Tom、Cowbell；同步套用演奏室、9 格 Pad、自由創作與曲譜測驗。
+4. 未修改 FairSing 登入、Firebase、班級資料與其他模組。
