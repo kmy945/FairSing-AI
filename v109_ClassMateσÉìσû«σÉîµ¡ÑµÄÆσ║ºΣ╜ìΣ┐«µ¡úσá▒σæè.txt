@@ -1,0 +1,1 @@
+v109 修正：ClassMate iframe 主動接收 FairSing 現有班級與學生名單；保留 ClassMate 積分、事件、座位設定；修正班級下拉空白導致無法排座位。
