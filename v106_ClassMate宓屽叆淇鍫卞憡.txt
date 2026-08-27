@@ -1,0 +1,8 @@
+FairSing AI v106 ClassMate 嵌入修正
+
+1. 移除對 classmate/index.html 的路徑依賴，避免 Firebase Hosting rewrite 回主 index.html。
+2. ClassMate 改為 srcdoc 同源內嵌，畫面只保留一次 FairSing 頂端導覽。
+3. 移除「重新載入 ClassMate」按鈕。
+4. ClassMate CSS/JS 直接內嵌，單獨覆蓋根目錄 index.html 也能顯示。
+5. ClassMate localStorage key 與 FairSing 主資料分離。
+6. 保留 v104 爵士鼓 BPM、節拍器排列與音量修正。
