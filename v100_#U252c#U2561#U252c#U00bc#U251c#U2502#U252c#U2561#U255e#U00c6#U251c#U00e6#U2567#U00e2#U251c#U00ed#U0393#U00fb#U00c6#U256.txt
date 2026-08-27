@@ -1,0 +1,15 @@
+FairSing AI v100｜正式 M 標誌嵌入版
+
+PASS｜Header正式Logo已嵌入
+PASS｜登入封面Logo已嵌入
+PASS｜Logo為單檔內嵌
+PASS｜爵士鼓DOM修正保留
+PASS｜DRUMLAB loader保留
+PASS｜Dashboard保留
+PASS｜直笛保留
+PASS｜Assessment保留
+PASS｜音樂殿堂主題保留
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+本版只加入正式品牌標誌，不修改班級、同步、直笛、Assessment、爵士鼓等功能邏輯。

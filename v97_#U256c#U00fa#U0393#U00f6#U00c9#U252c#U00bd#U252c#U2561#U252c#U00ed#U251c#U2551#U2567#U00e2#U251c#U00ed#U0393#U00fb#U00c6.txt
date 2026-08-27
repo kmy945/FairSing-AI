@@ -1,0 +1,23 @@
+FairSing AI v97｜功能頁顯示恢復＋爵士鼓原生內頁
+
+PASS｜v96攔截器已移除
+PASS｜全域drumlab-open CSS已移除
+PASS｜原生 go() 已加防呆
+PASS｜Dashboard存在
+PASS｜爵士鼓頁存在
+PASS｜爵士鼓導覽存在
+PASS｜DRUMLAB srcdoc保留
+PASS｜直笛保留
+PASS｜Assessment保留
+PASS｜班級學生保留
+PASS｜音樂殿堂主題保留
+PASS｜所有核心page齊全
+PASS｜所有核心nav齊全
+
+缺少 page：無
+缺少 nav：無
+Inline JavaScript：34 區塊／語法錯誤 0
+
+這版撤掉 v96 對全站 click/page/shell/nav 的攔截。
+Dashboard、直笛、Assessment、爵士鼓等全部重新交回 FairSing 原本 go(id) 切頁。
+爵士鼓只保留自身 iframe 高度與內容區樣式，不再改全站 layout。

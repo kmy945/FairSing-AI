@@ -1,0 +1,16 @@
+FairSing AI v103｜單一 Logo 乾淨封面＋音樂殿堂內頁
+
+PASS｜登入封面沒有任何額外 img 疊圖
+PASS｜登入背景已換成乾淨單一 M Logo 封面
+PASS｜內頁 Header Logo 保留
+PASS｜v102 內頁音樂殿堂主題保留
+PASS｜爵士鼓頁仍為 Assessment 外層同級
+PASS｜直笛保留
+PASS｜Assessment 保留
+PASS｜Dashboard 保留
+
+Inline JavaScript：34 區塊／語法錯誤 0
+
+封面處理：從乾淨音樂殿堂母版重建；舊 Logo 區清除後只合成一個 M 音符標誌。
+HTML 登入層：0 個 Logo img overlay，不再以方塊、遮罩或第二張 Logo 疊加。
+功能：未修改登入、同步、班級資料、直笛、Assessment、爵士鼓功能邏輯。
